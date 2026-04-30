@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="我的碎片">
+<meta name="theme-color" content="#FAF6F0">
+<title>我的碎片</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================
+   CSS Variables & Design Tokens
+   ============================================ */
+:root {
+  --bg-page: #FAF6F0;
+  --bg-card: #FFFAF5;
+  --bg-input: #FFF8F0;
+  --bg-hover: #F5EDE3;
+  --bg-overlay: rgba(61, 48, 41, 0.45);
+
+  --primary: #D2691E;
+  --primary-light: #E8A87C;
+  --primary-soft: #F5DCC8;
+  --accent-blue: #3A5A8C;
+  --accent-blue-light: #7BA7CC;
+  --accent-blue-soft: #D6E5F3;
+
+  --text-primary: #3D3029;
+  --text-secondary: #8C7B6B;
+  --text-tertiary: #B0A090;
+  --text-inverse: #FFFAF5;
+
+  --danger: #C0392B;
+  --danger-soft: #FADBD8;
+  --success: #4CAF50;
+
+  --shadow-sm: 0 1px 3px rgba(61, 48, 41, 0.06);
+  --shadow-md: 0 4px 16px rgba(61, 48, 41, 0.08);
+  --shadow-lg: 0 8px 32px rgba(61, 48, 41, 0.1);
+  --shadow-card: 0 2px 12px rgba(61, 48, 41, 0.06), 0 0 0 1px rgba(61, 48, 41, 0.03);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  --font-display: 'Noto Serif SC', 'PingFang SC', 'Hiragino Sans GB', serif;
+  --font-body: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', -apple-system, sans-serif;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ============================================
+   Reset & Base
+   ============================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: calc(32px + var(--safe-bottom));
+  overscroll-behavior-y: none;
+}
+
+/* 背景纹理 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: 
+    radial-gradient(ellipse at 20% 10%, rgba(232, 168, 124, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 90%, rgba(123, 167, 204, 0.08) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================
+   Scrollbar
+   ============================================ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-tertiary); border-radius: 2px; }
+
+/* ============================================
+   Layout Container
+   ============================================ */
+.app-container {
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ============================================
+   Top Navigation Bar
+   ============================================ */
+.nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: calc(12px + var(--safe-top)) 20px 12px;
+  margin: 0 -16px;
+  background: rgba(250, 246, 240, 0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(61, 48, 41, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+
+.nav-title span {
+  color: var(--primary);
+}
+
+.nav-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.nav-btn:active { transform: scale(0.92); }
+
+.nav-btn svg { width: 20px; height: 20px; }
+
+/* ============================================
+   Streak Card
+   ============================================ */
+.streak-card {
+  margin-top: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  animation: fadeInDown 0.5s ease-out;
+}
+
+.streak-info {
+  flex-shrink: 0;
+  text-align: center;
+  min-width: 90px;
+}
+
+.streak-number {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.streak-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.streak-emoji {
+  font-size: 18px;
+  display: block;
+  margin-top: 6px;
+}
+
+.heatmap-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.heatmap-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: #F0E8DD;
+  transition: background 0.3s;
+  position: relative;
+}
+
+.heatmap-cell.has-record {
+  background: var(--primary);
+}
+
+.heatmap-cell.is-today {
+  box-shadow: 0 0 0 2px var(--accent-blue-light);
+}
+
+.heatmap-cell.is-today.has-record {
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+/* ============================================
+   Composer (Input Area)
+   ============================================ */
+.composer {
+  margin-top: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.3s;
+}
+
+.composer:focus-within {
+  box-shadow: var(--shadow-md), 0 0 0 2px var(--primary-soft);
+}
+
+.composer-textarea {
+  width: 100%;
+  min-height: 80px;
+  max-height: 200px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: transparent;
+  overflow-y: auto;
+}
+
+.composer-textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+.composer-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(61, 48, 41, 0.08), transparent);
+  margin: 12px 0;
+}
+
+/* 图片预览区 */
+.composer-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.composer-previews:empty {
+  display: none;
+  margin-bottom: 0;
+}
+
+.preview-item {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  animation: fadeIn 0.3s ease;
+}
+
+.preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(61, 48, 41, 0.6);
+  color: white;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* 底部操作栏 */
+.composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.composer-tools {
+  display: flex;
+  gap: 4px;
+}
+
+.tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 38px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tool-btn svg { width: 18px; height: 18px; }
+
+.tool-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.tool-btn:active { transform: scale(0.95); }
+
+.publish-btn {
+  height: 40px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--primary), #B85A18);
+  color: var(--text-inverse);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.25s;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: 1px;
+}
+
+.publish-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(210, 105, 30, 0.3); }
+.publish-btn:active { transform: scale(0.96); }
+.publish-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+#imageInput { display: none; }
+
+/* ============================================
+   Search Bar
+   ============================================ */
+.search-bar {
+  margin-top: 20px;
+  position: relative;
+}
+
+.search-bar svg {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px 0 42px;
+  border: 1px solid rgba(61, 48, 41, 0.06);
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s;
+}
+
+.search-input::placeholder { color: var(--text-tertiary); }
+.search-input:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px var(--primary-soft); }
+
+.search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-clear.visible { display: flex; }
+
+/* ============================================
+   Timeline
+   ============================================ */
+.timeline {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.timeline-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.timeline-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  display: block;
+  opacity: 0.6;
+}
+
+/* Record Card */
+.record-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.record-time {
+  font-size: 12px;
+  color: var(--accent-blue-light);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.record-time svg {
+  width: 13px;
+  height: 13px;
+}
+
+.record-delete {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.record-delete svg { width: 16px; height: 16px; }
+.record-delete:hover { background: var(--danger-soft); color: var(--danger); }
+.record-delete:active { transform: scale(0.9); }
+
+.record-text {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 图片网格 */
+.record-images {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.record-images.cols-1 { grid-template-columns: 1fr; }
+.record-images.cols-2 { grid-template-columns: 1fr 1fr; }
+.record-images.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.record-images img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+  background: var(--bg-hover);
+}
+
+.record-images img:hover { opacity: 0.9; }
+.record-images.cols-1 img { aspect-ratio: 16/10; max-height: 280px; }
+
+/* ============================================
+   Modal (Delete Confirmation & Image Preview)
+   ============================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-box {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 28px 24px 20px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  transform: scale(0.9) translateY(10px);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.active .modal-box {
+  transform: scale(1) translateY(0);
+}
+
+.modal-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.modal-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-actions button {
+  flex: 1;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-cancel {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+.btn-cancel:hover { background: #E8DFD4; }
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-danger:hover { background: #A93226; }
+.btn-danger:active, .btn-cancel:active { transform: scale(0.96); }
+
+/* Image Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+  cursor: zoom-out;
+}
+
+.lightbox.active { opacity: 1; visibility: visible; }
+
+.lightbox img {
+  max-width: 92vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  transform: scale(0.9);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lightbox.active img { transform: scale(1); }
+
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============================================
+   Toast
+   ============================================ */
+.toast {
+  position: fixed;
+  bottom: calc(24px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  padding: 10px 20px;
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2000;
+  white-space: nowrap;
+}
+
+.toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ============================================
+   Light Reply (轻回复) 样式
+   ============================================ */
+.light-reply {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(61, 48, 41, 0.06);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: fadeIn 0.4s ease both;
+}
+
+.light-reply-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  /* 备用 SVG 占位头像 */
+  background: var(--bg-hover);
+}
+
+.light-reply-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.light-reply-header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.light-reply-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.light-reply-handle {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+
+.light-reply-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 520px) {
+  .app-container { padding: 0 12px; }
+  .nav-bar { margin: 0 -12px; padding-left: 16px; padding-right: 16px; }
+  .streak-card { padding: 18px; gap: 16px; flex-direction: column; align-items: stretch; }
+  .streak-info { display: flex; align-items: center; gap: 12px; min-width: auto; text-align: left; }
+  .streak-number { font-size: 36px; }
+  .streak-emoji { display: inline; margin-top: 0; margin-left: 4px; }
+}
+
+@media (min-width: 521px) {
+  .app-container { padding: 0 24px; }
+}
+</style>
+</head>
+
+<body>
+<!-- ============================================
+     App Shell
+     ============================================ -->
+<div class="app-container">
+  <!-- Nav Bar -->
+  <nav class="nav-bar">
+    <div class="nav-title">我的<span>碎片</span></div>
+    <div class="nav-actions">
+      <button class="nav-btn" id="exportBtn" title="导出 JSON" aria-label="导出数据">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Streak Card -->
+  <section class="streak-card" id="streakCard">
+    <div class="streak-info">
+      <div>
+        <div class="streak-number" id="streakNum">0</div>
+        <div class="streak-label">天连续记录</div>
+      </div>
+      <span class="streak-emoji" id="streakEmoji">🌱</span>
+    </div>
+    <div class="heatmap-section">
+      <div class="heatmap-label">最近 28 天</div>
+      <div class="heatmap-grid" id="heatmapGrid"></div>
+    </div>
+  </section>
+
+  <!-- Composer -->
+  <section class="composer" id="composer">
+    <textarea class="composer-textarea" id="textInput" placeholder="记录此刻的想法..." rows="3"></textarea>
+    <div class="composer-divider"></div>
+    <div class="composer-previews" id="imagePreviews"></div>
+    <div class="composer-actions">
+      <div class="composer-tools">
+        <button class="tool-btn" id="imageBtn" aria-label="添加图片">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          图片
+        </button>
+        <input type="file" id="imageInput" accept="image/*" multiple>
+      </div>
+      <button class="publish-btn" id="publishBtn">发 布</button>
+    </div>
+  </section>
+
+  <!-- Search -->
+  <div class="search-bar" id="searchBar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input class="search-input" id="searchInput" type="text" placeholder="搜索记录...">
+    <button class="search-clear" id="searchClear" aria-label="清除搜索">&times;</button>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline" id="timeline"></div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <span class="modal-icon">🗑️</span>
+    <div class="modal-title">删除这条记录？</div>
+    <div class="modal-desc">删除后无法恢复，确认要继续吗？</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelDelete">取消</button>
+      <button class="btn-danger" id="confirmDelete">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Lightbox -->
+<div class="lightbox" id="lightbox">
+  <img src="" alt="预览" id="lightboxImg">
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ============================================
+     JavaScript
+     ============================================ -->
+<script>
+(function() {
+  'use strict';
+
+  /* ============================
+     Constants & State
+     ============================ */
+  const STORAGE_KEY = 'my_fragments_data';
+  const MAX_IMG_WIDTH = 800;
+  const IMG_QUALITY = 0.7;
+
+  let records = [];
+  let pendingImages = [];
+  let deleteTargetId = null;
+  let searchQuery = '';
+  let debounceTimer = null;
+
+  /* ============================
+     Light Reply Config
+     ============================ */
+  const AVATAR_URL = './青红苹果头像.png'; // 可替换成本地头像路径
+  const BOT_NAME = '纸苹果';
+  const BOT_HANDLE = '@xyz613630';
+
+  const REPLY_RULES = {
+    food: {
+      keywords: ['奶茶', '咖啡', '甜', '吃', '外卖', '零食'],
+      replies: [
+        '今天在犒劳自己？不过也记得照顾好自己的身体，好吗？',
+        '甜的东西偶尔可以，但别让它替你撑太久。',
+        '看起来像是个小奖励的时刻，我相信你今天很努力了。',
+        '吃得开心是好事，不过下次记得和我一起晨跑。',
+        '下次记得多喝点水，我会提醒你的。',
+        '让我妹妹开心最重要……但别连续几天都这样。',
+        '好吧，算你过关，不过下一顿要乖一点。'
+      ]
+    },
+    sleep: {
+      keywords: ['熬夜', '晚睡', '困', '睡不着', '凌晨', '失眠'],
+      replies: [
+        '这么晚还在记录，不要太累了。',
+        '可以晚一点，但别太晚。',
+        '今天已经忙够了，可以慢一点了。',
+        '再撑一会儿就去休息，我就当你答应了。',
+        '去睡吧，这种事明天也来得及。',
+        '今天也辛苦了，快去睡觉吧，晚安。'
+      ]
+    },
+    emotion: {
+      keywords: ['难过', '烦', '焦虑', '痛苦'],
+      replies: [
+        '看起来今天的心情不太好，我在。',
+        '今天过得不轻松吧。',
+        '有情绪也没有关系，不用急着整理清楚。',
+        '这种时候，不用表现得很好也没关系。',
+        '……过来抱抱，让哥哥安慰一下你。'
+      ]
+    },
+    effort: {
+      keywords: ['加班', '工作', '学习', '忙', '任务'],
+      replies: [
+        '节奏满满的一天，不愧是我的妹妹。',
+        '这种程度已经很认真了，剩下的，慢慢来。',
+        '不用每件事都做到最好，你已经在往前走了。',
+        '可以放松一点，不需要一直绷着。',
+        '我妹妹真厉害。',
+        '我会记住你今天的努力。'
+      ]
+    },
+    morning: {
+      keywords: ['早上好', '早安', '一大早', '醒了', '太早'],
+      replies: [
+        '一日之计在于晨，今天起得真早，是在准备什么大事吗？',
+        '一大早就上线，是不是今天有重要安排？',
+        '今天看起来会是不错的一天。',
+        '这么早出现，是失眠还是自律模式开启了？'
+      ]
+    },
+    night: {
+      keywords: ['晚安', '睡了', '睡觉', '准备睡', '困了', '去睡', '好累', '休息了'],
+      replies: [
+        '晚安，好好休息，明天再继续加油 🌙',
+        '早点休息吧，今天辛苦了，睡个好觉，晚安。',
+        '晚安，希望你今晚做个好梦。',
+        '辛苦的一天结束了，接下来就好好休息吧，晚安。',
+        '要去睡了吗？别熬太晚了，早点休息，晚安 🌙'
+      ]
+    }
+  };
+
+  const EMOJI_POOL = ['☁️', '🫧', '🌙', '✨', '🌿', '☀️', '🌈', '😊'];
+  const DEFAULT_REPLIES = [
+    '我在看着，你继续就好。',
+    '今天也留下了一点痕迹。',
+    '我会记住这些小瞬间。',
+    '慢一点也没关系。',
+    '这种记录，会慢慢变得有意义。',
+    '真不愧是我的妹妹。',
+    '看到你在认真过自己的生活就好。'
+  ];
+  const LATE_NIGHT_REPLIES = [
+    '现在已经很晚了，快去休息吧。',
+    '今天可以结束在这里了。',
+    '剩下的明天再做也来得及。',
+    '今天辛苦了，快去休息吧。'
+  ];
+  const BUSY_DAY_REPLIES = [
+    '今天留下了很多东西。',
+    '这一天，好像挺满的。',
+    '我会记住今天。'
+  ];
+
+  /* ============================
+     DOM References
+     ============================ */
+  const $ = (sel) => document.querySelector(sel);
+  const textInput = $('#textInput');
+  const imagePreviews = $('#imagePreviews');
+  const imageInput = $('#imageInput');
+  const imageBtn = $('#imageBtn');
+  const publishBtn = $('#publishBtn');
+  const timeline = $('#timeline');
+  const searchInput = $('#searchInput');
+  const searchClear = $('#searchClear');
+  const streakNum = $('#streakNum');
+  const streakEmoji = $('#streakEmoji');
+  const heatmapGrid = $('#heatmapGrid');
+  const deleteModal = $('#deleteModal');
+  const confirmDelete = $('#confirmDelete');
+  const cancelDelete = $('#cancelDelete');
+  const lightbox = $('#lightbox');
+  const lightboxImg = $('#lightboxImg');
+  const exportBtn = $('#exportBtn');
+  const toast = $('#toast');
+
+  /* ============================
+     Data Persistence
+     ============================ */
+  function loadRecords() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      records = data ? JSON.parse(data) : [];
+    } catch (e) {
+      records = [];
+    }
+  }
+
+  function saveRecords() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    } catch (e) {
+      if (e.name === 'QuotaExceededError' || e.code === 22) {
+        showToast('⚠️ 存储空间不足，请导出后清理旧记录');
+      }
+    }
+  }
+
+  /* ============================
+     Image Compression
+     ============================ */
+  function compressImage(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > MAX_IMG_WIDTH) {
+            h = Math.round(h * MAX_IMG_WIDTH / w);
+            w = MAX_IMG_WIDTH;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', IMG_QUALITY));
+        };
+        img.onerror = () => resolve(null);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* ============================
+     Image Upload & Preview
+     ============================ */
+  imageBtn.addEventListener('click', () => imageInput.click());
+
+  imageInput.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      const dataUrl = await compressImage(file);
+      if (dataUrl) {
+        pendingImages.push(dataUrl);
+        renderImagePreviews();
+      }
+    }
+    imageInput.value = '';
+  });
+
+  function renderImagePreviews() {
+    imagePreviews.innerHTML = pendingImages.map((src, i) => `
+      <div class="preview-item" data-index="${i}">
+        <img src="${src}" alt="预览${i + 1}" onerror="this.src='https://placehold.co/72x72/F0E8DD/B0A090?text=ERR'">
+        <button class="preview-remove" data-index="${i}">&times;</button>
+      </div>
+    `).join('');
+  }
+
+  imagePreviews.addEventListener('click', (e) => {
+    const btn = e.target.closest('.preview-remove');
+    if (btn) {
+      const idx = parseInt(btn.dataset.index);
+      pendingImages.splice(idx, 1);
+      renderImagePreviews();
+    }
+  });
+
+  /* ============================
+     Publish
+     ============================ */
+  publishBtn.addEventListener('click', publish);
+
+  // Ctrl+Enter / Cmd+Enter 快捷发布
+  textInput.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      publish();
+    }
+  });
+
+  function publish() {
+    const text = textInput.value.trim();
+    if (!text && pendingImages.length === 0) {
+      showToast('✏️ 写点什么再发布吧');
+      return;
+    }
+
+    const record = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      text: text,
+      images: [...pendingImages],
+      createdAt: new Date().toISOString()
+    };
+
+    records.unshift(record);
+    saveRecords();
+
+    // 清空输入
+    textInput.value = '';
+    pendingImages = [];
+    imagePreviews.innerHTML = '';
+    textInput.style.height = 'auto';
+
+    // 刷新 UI
+    renderTimeline();
+    updateStreak();
+    showToast('✨ 已记录');
+  }
+
+  /* ============================
+     Timeline Rendering
+     ============================ */
+  function renderTimeline() {
+    const filtered = searchQuery
+      ? records.filter(r => r.text.toLowerCase().includes(searchQuery.toLowerCase()))
+      : records;
+
+    if (filtered.length === 0) {
+      timeline.innerHTML = `
+        <div class="timeline-empty">
+          <span class="timeline-empty-icon">${searchQuery ? '🔍' : '📝'}</span>
+          ${searchQuery ? '没有找到匹配的记录' : '还没有记录，写下你的第一条碎片吧'}
+        </div>
+      `;
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    filtered.forEach((record, index) => {
+      const card = document.createElement('div');
+      card.className = 'record-card';
+      card.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
+
+      const date = new Date(record.createdAt);
+      const timeStr = formatTime(date);
+
+      // 图片 HTML
+      let imagesHtml = '';
+      if (record.images && record.images.length > 0) {
+        const colsClass = record.images.length === 1 ? 'cols-1' :
+                          record.images.length === 2 ? 'cols-2' : 'cols-3';
+        imagesHtml = `
+          <div class="record-images ${colsClass}">
+            ${record.images.map((src, i) => 
+              `<img src="${src}" alt="图片${i+1}" loading="lazy" onclick="window._openLightbox('${src.replace(/'/g, "\\'")}')" onerror="this.style.display='none'">`
+            ).join('')}
+          </div>
+        `;
+      }
+
+      const lightReply = generateLightReply(record, records);
+      let replyHtml = '';
+      if (lightReply) {
+        replyHtml = `
+          <div class="light-reply">
+            <img class="light-reply-avatar" src="${AVATAR_URL}" alt="纸苹果" onerror="this.style.display='none'">
+            <div class="light-reply-content">
+              <div class="light-reply-header">
+                <span class="light-reply-name">${BOT_NAME}</span>
+                <span class="light-reply-handle">${BOT_HANDLE}</span>
+              </div>
+              <div class="light-reply-text">${escapeHtml(lightReply)}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      card.innerHTML = `
+        <div class="record-header">
+          <span class="record-time">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            ${timeStr}
+          </span>
+          <button class="record-delete" data-id="${record.id}" aria-label="删除">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+        ${record.text ? `<div class="record-text">${escapeHtml(record.text)}</div>` : ''}
+        ${imagesHtml}
+        ${replyHtml}
+      `;
+
+      fragment.appendChild(card);
+    });
+
+    timeline.innerHTML = '';
+    timeline.appendChild(fragment);
+  }
+
+  /* ============================
+     Delete
+     ============================ */
+  timeline.addEventListener('click', (e) => {
+    const btn = e.target.closest('.record-delete');
+    if (btn) {
+      deleteTargetId = btn.dataset.id;
+      deleteModal.classList.add('active');
+    }
+  });
+
+  confirmDelete.addEventListener('click', () => {
+    if (deleteTargetId) {
+      records = records.filter(r => r.id !== deleteTargetId);
+      saveRecords();
+      deleteTargetId = null;
+      deleteModal.classList.remove('active');
+      renderTimeline();
+      updateStreak();
+      showToast('🗑️ 已删除');
+    }
+  });
+
+  cancelDelete.addEventListener('click', () => {
+    deleteTargetId = null;
+    deleteModal.classList.remove('active');
+  });
+
+  deleteModal.addEventListener('click', (e) => {
+    if (e.target === deleteModal) {
+      deleteTargetId = null;
+      deleteModal.classList.remove('active');
+    }
+  });
+
+  /* ============================
+     Search
+     ============================ */
+  searchInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      searchQuery = searchInput.value.trim();
+      searchClear.classList.toggle('visible', searchQuery.length > 0);
+      renderTimeline();
+    }, 300);
+  });
+
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchQuery = '';
+    searchClear.classList.remove('visible');
+    renderTimeline();
+  });
+
+  /* ============================
+     Streak & Heatmap
+     ============================ */
+  function getDateStr(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function getRecordDates() {
+    const dates = new Set();
+    records.forEach(r => {
+      dates.add(getDateStr(new Date(r.createdAt)));
+    });
+    return dates;
+  }
+
+  function calcStreak(dates) {
+    const today = new Date();
+    let streak = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      if (dates.has(getDateStr(d))) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  function getStreakEmoji(streak) {
+    if (streak === 0) return '🌱';
+    if (streak < 3) return '🌿';
+    if (streak < 7) return '🌻';
+    if (streak < 14) return '🔥';
+    if (streak < 30) return '⭐';
+    return '🏆';
+  }
+
+  function updateStreak() {
+    const dates = getRecordDates();
+    const streak = calcStreak(dates);
+
+    streakNum.textContent = streak;
+    streakEmoji.textContent = getStreakEmoji(streak);
+
+    // Heatmap: 最近 28 天，今天在右下角（第 4 行第 7 列 = index 27）
+    const today = new Date();
+    let cells = '';
+    for (let i = 27; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = getDateStr(d);
+      const has = dates.has(dateStr);
+      const isToday = i === 0;
+      const classes = ['heatmap-cell'];
+      if (has) classes.push('has-record');
+      if (isToday) classes.push('is-today');
+      cells += `<div class="${classes.join(' ')}" title="${dateStr}${has ? ' ✔' : ''}"></div>`;
+    }
+    heatmapGrid.innerHTML = cells;
+  }
+
+  /* ============================
+     Lightbox
+     ============================ */
+  window._openLightbox = function(src) {
+    lightboxImg.src = src;
+    lightbox.classList.add('active');
+  };
+
+  lightbox.addEventListener('click', () => {
+    lightbox.classList.remove('active');
+    setTimeout(() => { lightboxImg.src = ''; }, 300);
+  });
+
+  /* ============================
+     Export
+     ============================ */
+  exportBtn.addEventListener('click', () => {
+    if (records.length === 0) {
+      showToast('📭 没有可导出的记录');
+      return;
+    }
+
+    // 导出时去除 base64 图片数据，减小体积（可选：保留引用信息）
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      count: records.length,
+      records: records.map(r => ({
+        id: r.id,
+        text: r.text,
+        imageCount: r.images ? r.images.length : 0,
+        images: r.images || [],
+        createdAt: r.createdAt
+      }))
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `我的碎片_${getDateStr(new Date())}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast(`📦 已导出 ${records.length} 条记录`);
+  });
+
+  /* ============================
+     Toast
+     ============================ */
+  let toastTimer = null;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  /* ============================
+     Utilities
+     ============================ */
+  function escapeHtml(str) {
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return str.replace(/[&<>"']/g, c => map[c]);
+  }
+
+  /* ============================
+     Light Reply Generator
+     ============================ */
+  function randomPick(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function generateLightReply(record, allRecords) {
+    // 70% 概率显示
+    if (Math.random() > 0.7) return null;
+
+    const text = record.text || '';
+    const lowerText = text;
+    const postDate = new Date(record.createdAt);
+    const postHour = postDate.getHours();
+    const postMinutes = postDate.getMinutes();
+    const postTimeInMin = postHour * 60 + postMinutes;
+
+    // 优先级1：关键词匹配
+    const ruleOrder = ['food', 'sleep', 'emotion', 'effort', 'morning', 'night'];
+    for (const category of ruleOrder) {
+      const rule = REPLY_RULES[category];
+      if (rule.keywords.some(kw => lowerText.includes(kw))) {
+        let reply = randomPick(rule.replies);
+        if (Math.random() < 0.4) {
+          reply += randomPick(EMOJI_POOL);
+        }
+        return reply;
+      }
+    }
+
+    // 优先级2：时间触发（23:00 - 03:00）
+    if (postTimeInMin >= 23 * 60 || postTimeInMin < 3 * 60) {
+      let reply = randomPick(LATE_NIGHT_REPLIES);
+      if (Math.random() < 0.4) reply += randomPick(EMOJI_POOL);
+      return reply;
+    }
+
+    // 优先级3：数量触发（当天 >= 5 条，仅最后一条显示）
+    const recordDateStr = getDateStr(postDate);
+    const sameDayRecords = allRecords
+      .filter(r => getDateStr(new Date(r.createdAt)) === recordDateStr)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    if (sameDayRecords.length >= 5 && sameDayRecords[0].id === record.id) {
+      let reply = randomPick(BUSY_DAY_REPLIES);
+      if (Math.random() < 0.4) reply += randomPick(EMOJI_POOL);
+      return reply;
+    }
+
+    // 优先级4：默认兜底
+    let reply = randomPick(DEFAULT_REPLIES);
+    if (Math.random() < 0.4) reply += randomPick(EMOJI_POOL);
+    return reply;
+  }
+
+  function formatTime(date) {
+    const now = new Date();
+    const diff = now - date;
+    const min = Math.floor(diff / 60000);
+    const hr = Math.floor(diff / 3600000);
+
+    if (min < 1) return '刚刚';
+    if (min < 60) return `${min} 分钟前`;
+    if (hr < 24 && now.getDate() === date.getDate()) {
+      return `今天 ${padTime(date.getHours())}:${padTime(date.getMinutes())}`;
+    }
+
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (date.getDate() === yesterday.getDate() &&
+        date.getMonth() === yesterday.getMonth() &&
+        date.getFullYear() === yesterday.getFullYear()) {
+      return `昨天 ${padTime(date.getHours())}:${padTime(date.getMinutes())}`;
+    }
+
+    if (date.getFullYear() === now.getFullYear()) {
+      return `${date.getMonth() + 1}月${date.getDate()}日 ${padTime(date.getHours())}:${padTime(date.getMinutes())}`;
+    }
+
+    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${padTime(date.getHours())}:${padTime(date.getMinutes())}`;
+  }
+
+  function padTime(n) { return String(n).padStart(2, '0'); }
+
+  /* ============================
+     Textarea Auto-resize
+     ============================ */
+  textInput.addEventListener('input', () => {
+    textInput.style.height = 'auto';
+    textInput.style.height = Math.min(textInput.scrollHeight, 200) + 'px';
+  });
+
+  /* ============================
+     PWA: Manifest & Service Worker
+     ============================ */
+  function registerPWA() {
+    // Inline manifest
+    const manifest = {
+      name: '我的碎片',
+      short_name: '碎片',
+      description: '私人碎片化记录工具',
+      start_url: '.',
+      display: 'standalone',
+      background_color: '#FAF6F0',
+      theme_color: '#FAF6F0',
+      icons: [
+        {
+          src: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="96" fill="#FAF6F0"/><text x="256" y="320" text-anchor="middle" font-size="280">📝</text></svg>'),
+          sizes: '512x512',
+          type: 'image/svg+xml',
+          purpose: 'any maskable'
+        }
+      ]
+    };
+
+    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    const manifestUrl = URL.createObjectURL(manifestBlob);
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = manifestUrl;
+    document.head.appendChild(link);
+
+    // Service Worker (basic cache)
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        self.addEventListener('install', (e) => { self.skipWaiting(); });
+        self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
+        self.addEventListener('fetch', (e) => {
+          e.respondWith(fetch(e.request).catch(() => new Response('Offline', { status: 503 })));
+        });
+      `;
+      const swBlob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).catch(() => {});
+    }
+  }
+
+  /* ============================
+     Init
+     ============================ */
+  function init() {
+    loadRecords();
+    renderTimeline();
+    updateStreak();
+    registerPWA();
+  }
+
+  // 检查 DOM 状态
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+</body>
+</html>
