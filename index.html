@@ -910,7 +910,7 @@ body::before {
   /* ============================
      Constants & State
      ============================ */
-  const APP_VERSION = '1.0.4';
+  const APP_VERSION = '1.0.5';
   const STORAGE_KEY = 'my_fragments_data';
   const MAX_IMG_WIDTH = 800;
   const IMG_QUALITY = 0.7;
@@ -1452,7 +1452,8 @@ body::before {
         text: r.text,
         imageCount: r.images ? r.images.length : 0,
         images: r.images || [],
-        createdAt: r.createdAt
+        createdAt: r.createdAt,
+        reply: r.reply || null
       }))
     };
 
@@ -1507,12 +1508,17 @@ body::before {
             ? r.id
             : Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + validCount;
 
-          records.push({
+          const entry = {
             id: newId,
             text: r.text || '',
             images: Array.isArray(r.images) ? r.images : [],
             createdAt: r.createdAt || new Date().toISOString()
-          });
+          };
+          // 保留已有的 reply
+          if ('reply' in r) {
+            entry.reply = r.reply;
+          }
+          records.push(entry);
 
           existingIds.add(newId);
           validCount++;
@@ -1525,7 +1531,8 @@ body::before {
 
         // 按时间倒序排列
         records.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        saveRecords();
+        // 为缺少 reply 的导入记录生成回复
+        migrateReplies();
         renderTimeline();
         updateStreak();
         showToast(`📥 成功导入 ${validCount} 条记录`);
