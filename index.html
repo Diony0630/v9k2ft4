@@ -811,6 +811,13 @@ body::before {
   <nav class="nav-bar">
     <div class="nav-title">我的<span>碎片</span></div>
     <div class="nav-actions">
+      <button class="nav-btn" id="importBtn" title="导入 JSON" aria-label="导入数据">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </button>
       <button class="nav-btn" id="exportBtn" title="导出 JSON" aria-label="导出数据">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -818,6 +825,7 @@ body::before {
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
       </button>
+      <input type="file" id="importInput" accept=".json,application/json" style="display:none">
     </div>
   </nav>
 
@@ -920,6 +928,20 @@ body::before {
   const BOT_HANDLE = '@xyz613630';
 
   const REPLY_RULES = {
+    affection: {
+      keywords: ['想你', '喜欢你', '爱你', '好想你', '想哥哥', '哥哥', '在吗', '陪我'],
+      replies: [
+        '乖，哥哥今天也很想你❤️',
+        '哥哥也最最喜欢你🫶',
+        '我在呢，怎么突然这么想我呀 😊',
+        '收到你的消息了，心情一下就变好了。',
+        '今天也有好好在想你',
+        '别急，我一直都在这里。',
+        '听到你这样说，感觉一天都变温柔了',
+        '嗯，我在，慢慢说就好',
+        '我也很喜欢这样被你需要的感觉。'
+      ]
+    },
     food: {
       keywords: ['奶茶', '咖啡', '甜', '吃', '外卖', '零食'],
       replies: [
@@ -1028,6 +1050,8 @@ body::before {
   const lightbox = $('#lightbox');
   const lightboxImg = $('#lightboxImg');
   const exportBtn = $('#exportBtn');
+  const importBtn = $('#importBtn');
+  const importInput = $('#importInput');
   const toast = $('#toast');
 
   /* ============================
@@ -1414,6 +1438,74 @@ body::before {
   });
 
   /* ============================
+     Import
+     ============================ */
+  importBtn.addEventListener('click', () => importInput.click());
+
+  importInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const data = JSON.parse(evt.target.result);
+
+        // 兼容两种格式：{ records: [...] } 或直接 [...]
+        let importedRecords = [];
+        if (Array.isArray(data)) {
+          importedRecords = data;
+        } else if (data && Array.isArray(data.records)) {
+          importedRecords = data.records;
+        } else {
+          showToast('⚠️ JSON 格式不正确');
+          return;
+        }
+
+        // 验证 & 标准化每条记录
+        let validCount = 0;
+        const existingIds = new Set(records.map(r => r.id));
+
+        importedRecords.forEach(r => {
+          // 至少要有 text 或 images
+          if (!r.text && (!r.images || r.images.length === 0)) return;
+
+          // 生成新 id 避免重复
+          const newId = r.id && !existingIds.has(r.id)
+            ? r.id
+            : Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + validCount;
+
+          records.push({
+            id: newId,
+            text: r.text || '',
+            images: Array.isArray(r.images) ? r.images : [],
+            createdAt: r.createdAt || new Date().toISOString()
+          });
+
+          existingIds.add(newId);
+          validCount++;
+        });
+
+        if (validCount === 0) {
+          showToast('⚠️ 未找到有效记录');
+          return;
+        }
+
+        // 按时间倒序排列
+        records.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        saveRecords();
+        renderTimeline();
+        updateStreak();
+        showToast(`📥 成功导入 ${validCount} 条记录`);
+      } catch (err) {
+        showToast('⚠️ JSON 解析失败，请检查文件格式');
+      }
+    };
+    reader.readAsText(file);
+    importInput.value = '';
+  });
+
+  /* ============================
      Toast
      ============================ */
   let toastTimer = null;
@@ -1451,7 +1543,7 @@ body::before {
     const postTimeInMin = postHour * 60 + postMinutes;
 
     // 优先级1：关键词匹配
-    const ruleOrder = ['food', 'sleep', 'emotion', 'effort', 'morning', 'night'];
+    const ruleOrder = ['affection', 'food', 'sleep', 'emotion', 'effort', 'morning', 'night'];
     for (const category of ruleOrder) {
       const rule = REPLY_RULES[category];
       if (rule.keywords.some(kw => lowerText.includes(kw))) {
