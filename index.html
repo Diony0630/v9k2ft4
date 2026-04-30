@@ -910,7 +910,7 @@ body::before {
   /* ============================
      Constants & State
      ============================ */
-  const APP_VERSION = '1.0.3';
+  const APP_VERSION = '1.0.4';
   const STORAGE_KEY = 'my_fragments_data';
   const MAX_IMG_WIDTH = 800;
   const IMG_QUALITY = 0.7;
@@ -1285,9 +1285,6 @@ body::before {
 
     timeline.innerHTML = '';
     timeline.appendChild(fragment);
-
-    // 保存旧记录迁移的固定回复
-    flushMigration();
   }
 
   /* ============================
@@ -1615,24 +1612,26 @@ body::before {
     return reply;
   }
 
-  // 获取固定回复：优先读取已存储的 reply 字段，旧数据做一次性迁移
-  let _migrationDirty = false;
+  // 获取固定回复：仅读取已存储的 reply 字段（迁移在 init 阶段完成）
   function getFixedReply(record) {
-    // 已有保存的 reply（包括 null 表示"没有回复"）
     if ('reply' in record) {
       return record.reply;
     }
-    // 旧记录迁移：生成一次并写入
-    const generated = generateLightReply(record, records);
-    record.reply = generated || null;
-    _migrationDirty = true;
-    return record.reply;
+    // 理论上不会到这里（init 时已迁移），兜底返回 null
+    return null;
   }
 
-  function flushMigration() {
-    if (_migrationDirty) {
+  // 启动时一次性迁移所有缺少 reply 字段的旧记录
+  function migrateReplies() {
+    let dirty = false;
+    records.forEach(record => {
+      if (!('reply' in record)) {
+        record.reply = generateLightReply(record, records) || null;
+        dirty = true;
+      }
+    });
+    if (dirty) {
       saveRecords();
-      _migrationDirty = false;
     }
   }
 
@@ -1828,6 +1827,7 @@ body::before {
      ============================ */
   function init() {
     loadRecords();
+    migrateReplies(); // 一次性为旧记录固定回复
     renderTimeline();
     updateStreak();
     registerPWA();
