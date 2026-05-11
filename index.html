@@ -58,6 +58,7 @@
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tab-bar-height: 56px;
 }
 
 /* ============================================
@@ -83,7 +84,7 @@ body {
   background: var(--bg-page);
   min-height: 100vh;
   min-height: 100dvh;
-  padding-bottom: calc(32px + var(--safe-bottom));
+  padding-bottom: calc(72px + var(--safe-bottom));
   overscroll-behavior-y: none;
 }
 
@@ -707,7 +708,7 @@ body::before {
    ============================================ */
 .toast {
   position: fixed;
-  bottom: calc(24px + var(--safe-bottom));
+  bottom: calc(var(--tab-bar-height) + 24px + var(--safe-bottom));
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   padding: 10px 20px;
@@ -784,6 +785,102 @@ body::before {
   line-height: 1.6;
 }
 
+/* 行前提示横幅（嵌入行程条卡片顶部） */
+.itinerary-pre-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px 9px;
+  background: rgba(210, 105, 30, 0.06);
+  border-top: 2.5px solid var(--primary);
+  margin: -12px -16px 10px -16px;
+  width: calc(100% + 32px);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  animation: fadeIn 0.4s ease both;
+  position: relative;
+}
+.itinerary-pre-hint::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 3%;
+  right: 3%;
+  height: 0.5px;
+  background: rgba(210, 105, 30, 0.13);
+}
+.itinerary-pre-hint .hint-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  opacity: 0.85;
+  margin-top: 1px;
+}
+.itinerary-pre-hint .hint-body {
+  flex: 1;
+  min-width: 0;
+}
+.itinerary-pre-hint .hint-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.itinerary-pre-hint .hint-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* 行程完成后帖子回复（行程条下方） */
+.itinerary-post-reply {
+  margin-left: 34px;
+  margin-top: 4px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  animation: fadeIn 0.4s ease both;
+}
+.itinerary-post-reply .reply-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.itinerary-post-reply .reply-body {
+  flex: 1;
+  min-width: 0;
+}
+.itinerary-post-reply .reply-header {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+.itinerary-post-reply .reply-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.itinerary-post-reply .reply-handle {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+.itinerary-post-reply .reply-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
 /* ============================================
    Responsive
    ============================================ */
@@ -799,6 +896,684 @@ body::before {
 @media (min-width: 521px) {
   .app-container { padding: 0 24px; }
 }
+
+/* ============================================
+   Bottom Tab Bar
+   ============================================ */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  height: calc(var(--tab-bar-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: rgba(255, 250, 245, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgba(61, 48, 41, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-item {
+  flex: 1;
+  max-width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: var(--tab-bar-height);
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-item svg { width: 22px; height: 22px; }
+.tab-item.active { color: var(--primary); }
+.tab-item:active { transform: scale(0.92); }
+
+/* Page Sections */
+.page-section { display: none; }
+.page-section.active { display: block; }
+
+/* ============================================
+   Travel Module
+   ============================================ */
+.travel-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: calc(12px + var(--safe-top)) 20px 12px;
+  margin: 0 -16px;
+  background: rgba(250, 246, 240, 0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(61, 48, 41, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.travel-nav-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.travel-nav-title span { color: var(--primary); }
+
+.travel-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-tertiary);
+}
+.travel-empty-icon { font-size: 56px; margin-bottom: 16px; display: block; }
+
+.travel-action-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.travel-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.travel-action-btn.primary {
+  background: linear-gradient(135deg, var(--primary), #B85A18);
+  color: var(--text-inverse);
+}
+.travel-action-btn.primary:hover { box-shadow: 0 4px 12px rgba(210, 105, 30, 0.3); }
+.travel-action-btn:active { transform: scale(0.95); }
+
+/* Trip card */
+.trip-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  margin-top: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.trip-card { position: relative; }
+.trip-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.trip-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.trip-card-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--text-primary); flex: 1; }
+.trip-card-date { font-size: 12px; color: var(--text-tertiary); }
+.trip-card-route { font-size: 13px; color: var(--text-secondary); }
+.trip-delete-btn {
+  position: absolute; top: 12px; right: 12px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--text-tertiary); font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; z-index: 2; opacity: 0;
+}
+.trip-card:hover .trip-delete-btn { opacity: 1; }
+.trip-delete-btn:hover { background: var(--danger-soft); color: var(--danger); }
+
+/* Trip detail */
+.trip-detail { display: none; }
+.trip-detail.active { display: block; }
+
+.trip-detail-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: calc(12px + var(--safe-top)) 16px 12px;
+  margin: 0 -16px;
+  background: rgba(250, 246, 240, 0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(61, 48, 41, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trip-back-btn {
+  width: 36px; height: 36px; border: none; border-radius: var(--radius-md);
+  background: transparent; color: var(--text-secondary); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.trip-back-btn:hover { background: var(--bg-hover); }
+.trip-back-btn svg { width: 20px; height: 20px; }
+
+.trip-detail-title {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 600; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.trip-refresh-btn {
+  width: 36px; height: 36px; border: none; border-radius: var(--radius-md);
+  background: transparent; color: var(--text-secondary); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.trip-refresh-btn:hover { background: var(--bg-hover); }
+.trip-refresh-btn svg { width: 18px; height: 18px; }
+
+/* Flight card */
+.flight-card {
+  margin-top: 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+}
+.flight-card-title { font-size: 13px; color: var(--text-tertiary); font-weight: 500; margin-bottom: 10px; }
+.flight-segment { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.flight-segment + .flight-segment { border-top: 1px dashed rgba(61, 48, 41, 0.08); }
+.flight-icon { font-size: 20px; flex-shrink: 0; }
+.flight-info { flex: 1; }
+.flight-route { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.flight-meta { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+
+/* Hotel timeline */
+.hotel-timeline {
+  margin-top: 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+}
+.hotel-timeline-title { font-size: 13px; color: var(--text-tertiary); font-weight: 500; margin-bottom: 10px; }
+.hotel-bar { display: flex; gap: 6px; }
+.hotel-item {
+  flex: 1;
+  background: var(--primary-soft);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+.hotel-item-date { font-size: 11px; color: var(--primary); font-weight: 600; }
+.hotel-item-name { font-size: 13px; color: var(--text-primary); font-weight: 500; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hotel-item-price { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+/* Day tabs */
+.day-tabs {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.day-tabs::-webkit-scrollbar { display: none; }
+.day-tab {
+  flex-shrink: 0;
+  height: 34px; padding: 0 14px;
+  border: 1px solid rgba(61, 48, 41, 0.1);
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 13px; font-weight: 500; font-family: var(--font-body);
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.day-tab.active { background: var(--primary); color: var(--text-inverse); border-color: var(--primary); }
+
+/* Day panel */
+.day-content { margin-top: 12px; }
+.day-panel { display: none; }
+.day-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+/* Checkpoint */
+.checkpoint-list { display: flex; flex-direction: column; gap: 8px; }
+.checkpoint-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; background: var(--bg-card); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+.checkpoint-check {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--text-tertiary); flex-shrink: 0; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-top: 2px;
+}
+.checkpoint-check.checked { border-color: var(--success); background: var(--success); color: white; }
+.checkpoint-check.checked::after { content: '\2713'; font-size: 12px; font-weight: bold; }
+.checkpoint-check.skipped { border-color: var(--text-tertiary); background: var(--bg-hover); color: var(--text-tertiary); }
+.checkpoint-check.skipped::after { content: '⊘'; font-size: 11px; }
+.checkpoint-info { flex: 1; min-width: 0; }
+.checkpoint-time { font-size: 11px; color: var(--accent-blue-light); font-weight: 500; }
+.checkpoint-name { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+.checkpoint-name.done { text-decoration: line-through; color: var(--text-tertiary); }
+.checkpoint-name.skipped { text-decoration: line-through; color: var(--text-tertiary); }
+.checkpoint-detail { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.checkpoint-jp { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.checkpoint-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; margin-top: 2px; }
+.checkpoint-skip-btn, .checkpoint-delete-btn {
+  width: 22px; height: 22px; border: none; border-radius: 50%;
+  background: transparent; color: var(--text-tertiary); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; transition: all 0.2s;
+}
+.checkpoint-skip-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
+.checkpoint-delete-btn:hover { background: var(--danger-soft); color: var(--danger); }
+
+/* Sub Tabs */
+.sub-tabs {
+  margin-top: 20px; display: flex; border-bottom: 1px solid rgba(61, 48, 41, 0.08);
+}
+.sub-tab {
+  flex: 1; height: 40px; border: none; background: transparent;
+  color: var(--text-tertiary); font-size: 13px; font-weight: 500; font-family: var(--font-body);
+  cursor: pointer; position: relative; transition: color 0.2s;
+}
+.sub-tab.active { color: var(--primary); }
+.sub-tab.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%;
+  height: 2px; background: var(--primary); border-radius: 1px;
+}
+.sub-content { margin-top: 12px; min-height: 100px; }
+.sub-panel { display: none; }
+.sub-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+/* Checklist */
+.checklist-list { display: flex; flex-direction: column; gap: 6px; }
+.checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card); border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); }
+.checklist-cb {
+  width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--text-tertiary);
+  flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.checklist-cb.checked { border-color: var(--success); background: var(--success); color: white; }
+.checklist-cb.checked::after { content: '\2713'; font-size: 11px; font-weight: bold; }
+.checklist-text { font-size: 14px; color: var(--text-primary); flex: 1; }
+.checklist-text.done { text-decoration: line-through; color: var(--text-tertiary); }
+
+/* Lookup table */
+.lookup-table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  background: var(--bg-card); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm);
+}
+.lookup-table th { background: var(--bg-hover); padding: 8px 10px; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-align: left; }
+.lookup-table td { padding: 8px 10px; font-size: 13px; color: var(--text-primary); border-top: 1px solid rgba(61, 48, 41, 0.05); }
+.lookup-del-btn {
+  background: none; border: none; color: var(--text-tertiary); font-size: 16px; cursor: pointer;
+  padding: 2px 6px; border-radius: 4px; opacity: 0.4; transition: all 0.2s;
+}
+.lookup-del-btn:hover { opacity: 1; color: #c0392b; background: rgba(192,57,43,0.08); }
+.lookup-btn-row { display: flex; gap: 8px; margin-top: 8px; }
+.lookup-btn-row .add-item-btn { flex: 1; }
+
+/* Add item button */
+.add-item-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; height: 40px; margin-top: 12px;
+  border: 1px dashed rgba(61, 48, 41, 0.15); border-radius: var(--radius-md);
+  background: transparent; color: var(--text-tertiary); font-size: 13px; font-family: var(--font-body); cursor: pointer; transition: all 0.2s;
+}
+.add-item-btn:hover { border-color: var(--primary-light); color: var(--primary); background: var(--primary-soft); }
+
+/* ============================================
+   Transport Panel (折叠)
+   ============================================ */
+.transport-panel {
+  margin-top: 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.transport-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; cursor: pointer; transition: background 0.2s;
+}
+.transport-header:hover { background: var(--bg-hover); }
+.transport-header-title { font-size: 13px; color: var(--text-tertiary); font-weight: 500; }
+.transport-toggle { font-size: 12px; color: var(--text-tertiary); transition: transform 0.3s; }
+.transport-panel.open .transport-toggle { transform: rotate(180deg); }
+.transport-body { padding: 0 20px; max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s; }
+.transport-panel.open .transport-body { max-height: 2000px; padding: 0 20px 16px; }
+.transport-section { margin-bottom: 14px; }
+.transport-section-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+.transport-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: var(--radius-sm); overflow: hidden; }
+.transport-table th { background: var(--bg-hover); padding: 6px 10px; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: left; }
+.transport-table td { padding: 6px 10px; font-size: 12px; color: var(--text-primary); border-top: 1px solid rgba(61, 48, 41, 0.05); }
+.transport-tip { font-size: 11px; color: var(--accent-blue); background: var(--accent-blue-soft); padding: 6px 10px; border-radius: var(--radius-sm); margin-top: 6px; }
+
+/* ============================================
+   Hotel Detail Card (enhanced)
+   ============================================ */
+.hotel-detail-card {
+  margin-top: 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+}
+.hotel-detail-card-title { font-size: 13px; color: var(--text-tertiary); font-weight: 500; margin-bottom: 12px; }
+.hotel-detail-item {
+  background: var(--primary-soft);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.hotel-detail-item:last-child { margin-bottom: 0; }
+.hotel-detail-date { font-size: 11px; color: var(--primary); font-weight: 600; margin-bottom: 4px; }
+.hotel-detail-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.hotel-detail-namejp { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.hotel-detail-romaji { font-size: 11px; color: var(--text-tertiary); }
+.hotel-detail-address { font-size: 12px; color: var(--text-secondary); margin-top: 6px; display: flex; align-items: flex-start; gap: 4px; }
+.hotel-detail-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--text-secondary); }
+.hotel-detail-meta span { display: flex; align-items: center; gap: 3px; }
+.hotel-detail-features { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.hotel-detail-features .tag { font-size: 10px; padding: 2px 8px; background: rgba(210, 105, 30, 0.1); color: var(--primary); border-radius: var(--radius-full); }
+.hotel-detail-images { display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; }
+.hotel-detail-images img { width: 60px; height: 60px; border-radius: var(--radius-sm); object-fit: cover; cursor: pointer; }
+.hotel-upload-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--primary); cursor: pointer; margin-top: 8px;
+  padding: 4px 10px; background: rgba(210, 105, 30, 0.08); border-radius: var(--radius-full);
+  border: none; font-family: var(--font-body); transition: all 0.2s;
+}
+.hotel-upload-btn:hover { background: rgba(210, 105, 30, 0.15); }
+.hotel-edit-btn {
+  position: absolute; top: 10px; right: 10px;
+  width: 26px; height: 26px; border: none; border-radius: 50%;
+  background: rgba(255,255,255,0.8); color: var(--text-secondary);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; transition: all 0.2s;
+}
+.hotel-edit-btn:hover { background: var(--primary-soft); color: var(--primary); }
+
+/* ============================================
+   Attachment (攻略缩略条)
+   ============================================ */
+.checkpoint-attachments { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+
+/* Checkin card (打卡卡片) */
+.checkin-card {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px 16px; border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-card) 85%, var(--primary) 15%);
+  border-left: 3px solid var(--primary);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+.checkin-card-header { display: flex; align-items: center; gap: 8px; }
+.checkin-card-badge {
+  font-size: 10px; font-weight: 600; color: var(--primary);
+  background: var(--primary-soft); padding: 2px 8px; border-radius: 10px;
+  letter-spacing: 0.5px; flex-shrink: 0;
+}
+.checkin-card-title { font-size: 14px; font-weight: 600; color: var(--text-primary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.checkin-card-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+.checkin-card-meta span::before { margin-right: 4px; }
+.checkin-card-content { font-size: 13px; color: var(--text-primary); line-height: 1.6; white-space: pre-wrap; }
+.checkin-card-images { display: flex; flex-wrap: wrap; gap: 6px; }
+.checkin-card-images img { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; cursor: pointer; }
+.checkin-card-actions {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s;
+}
+.checkin-card:hover .checkin-card-actions { opacity: 1; }
+.checkin-card-actions button {
+  background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 4px; border-radius: 4px; color: var(--text-tertiary);
+}
+.checkin-card-actions button:hover { background: var(--bg-hover); color: var(--danger); }
+.attachment-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; background: var(--bg-input); border-radius: var(--radius-sm);
+  cursor: pointer; transition: background 0.2s;
+}
+.attachment-bar:hover { background: var(--bg-hover); }
+.attachment-bar-icon { font-size: 12px; flex-shrink: 0; }
+.attachment-bar-title { font-size: 12px; font-weight: 500; color: var(--text-primary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.attachment-bar-preview { font-size: 11px; color: var(--text-tertiary); max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.attachment-bar-thumb { width: 24px; height: 24px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+.checkpoint-add-btn {
+  width: 24px; height: 24px; border: 1px dashed var(--text-tertiary); border-radius: 50%;
+  background: transparent; color: var(--text-tertiary); font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: all 0.2s; margin-top: 2px;
+}
+.checkpoint-add-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+
+/* ============================================
+   Form Modal (编辑弹窗)
+   ============================================ */
+.form-modal-overlay {
+  position: fixed; inset: 0; z-index: 1002;
+  background: var(--bg-overlay);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; visibility: hidden; transition: all 0.25s;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.form-modal-overlay.active { opacity: 1; visibility: visible; }
+.form-modal-box {
+  background: var(--bg-card); border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: 24px 20px calc(20px + var(--safe-bottom));
+  width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto;
+  transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.form-modal-overlay.active .form-modal-box { transform: translateY(0); }
+.form-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.form-modal-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--text-primary); }
+.form-modal-close { width: 32px; height: 32px; border: none; border-radius: 50%; background: var(--bg-hover); color: var(--text-secondary); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+.form-input {
+  width: 100%; height: 40px; padding: 0 12px; border: 1px solid rgba(61, 48, 41, 0.1);
+  border-radius: var(--radius-sm); background: var(--bg-input); font-size: 14px;
+  color: var(--text-primary); font-family: var(--font-body); outline: none; transition: border-color 0.2s;
+}
+.form-input:focus { border-color: var(--primary-light); }
+.form-textarea {
+  width: 100%; min-height: 100px; padding: 10px 12px; border: 1px solid rgba(61, 48, 41, 0.1);
+  border-radius: var(--radius-sm); background: var(--bg-input); font-size: 14px;
+  color: var(--text-primary); font-family: var(--font-body); outline: none; resize: vertical; transition: border-color 0.2s;
+}
+.form-textarea:focus { border-color: var(--primary-light); }
+.form-submit-btn {
+  width: 100%; height: 44px; border: none; border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--primary), #B85A18); color: var(--text-inverse);
+  font-size: 15px; font-weight: 600; font-family: var(--font-body); cursor: pointer; transition: all 0.2s;
+}
+.form-submit-btn:hover { box-shadow: 0 4px 12px rgba(210, 105, 30, 0.3); }
+.form-submit-btn:active { transform: scale(0.97); }
+.form-image-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.form-image-previews .preview-item { width: 64px; height: 64px; }
+
+/* ============================================
+   Reply Settings Panel (回复规则设置)
+   ============================================ */
+.reply-settings-overlay {
+  position: fixed; inset: 0; z-index: 1010;
+  background: var(--bg-overlay);
+  opacity: 0; visibility: hidden; transition: all 0.3s;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.reply-settings-overlay.active { opacity: 1; visibility: visible; }
+.reply-settings-panel {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 1011;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  max-height: 88vh; display: flex; flex-direction: column;
+  transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 -4px 24px rgba(61,48,41,0.12);
+}
+.reply-settings-overlay.active + .reply-settings-panel,
+.reply-settings-panel.active { transform: translateY(0); }
+.rs-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 14px; border-bottom: 1px solid rgba(61,48,41,0.06); flex-shrink: 0;
+}
+.rs-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--text-primary); }
+.rs-close {
+  width: 32px; height: 32px; border: none; border-radius: 50%; background: var(--bg-hover);
+  color: var(--text-secondary); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.rs-close:hover { background: var(--primary-soft); color: var(--primary); }
+.rs-body { flex: 1; overflow-y: auto; padding: 16px 20px calc(20px + var(--safe-bottom)); }
+
+/* Tab switch: 碎片回复 / 旅行回复 */
+.rs-tab-bar {
+  display: flex; gap: 0; background: var(--bg-hover); border-radius: var(--radius-full);
+  padding: 3px; margin-bottom: 16px;
+}
+.rs-tab {
+  flex: 1; height: 34px; border: none; border-radius: var(--radius-full);
+  background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 500;
+  font-family: var(--font-body); cursor: pointer; transition: all 0.25s;
+}
+.rs-tab.active { background: var(--bg-card); color: var(--primary); box-shadow: var(--shadow-sm); font-weight: 600; }
+.rs-tab-content { display: none; }
+.rs-tab-content.active { display: block; }
+
+/* Category card */
+.rs-category {
+  background: var(--bg-page); border-radius: var(--radius-md);
+  margin-bottom: 12px; overflow: hidden; border: 1px solid rgba(61,48,41,0.04);
+}
+.rs-category-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; cursor: pointer; user-select: none; transition: background 0.2s;
+}
+.rs-category-header:hover { background: var(--bg-hover); }
+.rs-category-name {
+  font-size: 14px; font-weight: 600; color: var(--text-primary);
+  display: flex; align-items: center; gap: 6px;
+}
+.rs-category-name .badge {
+  font-size: 11px; font-weight: 500; color: var(--text-tertiary); background: var(--bg-hover);
+  padding: 1px 7px; border-radius: var(--radius-full);
+}
+.rs-category-toggle {
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  color: var(--text-tertiary); transition: transform 0.25s;
+}
+.rs-category.expanded .rs-category-toggle { transform: rotate(180deg); }
+.rs-category-body { display: none; padding: 0 14px 14px; }
+.rs-category.expanded .rs-category-body { display: block; }
+
+/* Section label */
+.rs-section-label {
+  font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 6px;
+}
+
+/* Chips (keywords / replies) */
+.rs-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rs-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: var(--radius-full);
+  font-size: 12px; color: var(--text-primary); cursor: default;
+  transition: all 0.2s; max-width: 100%; position: relative;
+}
+.rs-chip.kw { background: var(--accent-blue-soft); }
+.rs-chip.rp { background: var(--primary-soft); }
+.rs-chip .chip-del {
+  width: 16px; height: 16px; border: none; border-radius: 50%; background: rgba(61,48,41,0.1);
+  color: var(--text-secondary); font-size: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
+}
+.rs-chip .chip-del:hover { background: var(--danger-soft); color: var(--danger); }
+.rs-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+
+/* Inline add input */
+.rs-add-row { display: flex; gap: 6px; margin-top: 6px; }
+.rs-add-input {
+  flex: 1; height: 32px; padding: 0 10px; border: 1px dashed rgba(61,48,41,0.15);
+  border-radius: var(--radius-full); background: var(--bg-input); font-size: 12px;
+  color: var(--text-primary); font-family: var(--font-body); outline: none; transition: border-color 0.2s;
+}
+.rs-add-input:focus { border-color: var(--primary-light); border-style: solid; }
+.rs-add-input::placeholder { color: var(--text-tertiary); }
+.rs-add-btn {
+  height: 32px; padding: 0 14px; border: none; border-radius: var(--radius-full);
+  background: var(--primary); color: var(--text-inverse); font-size: 12px; font-weight: 600;
+  font-family: var(--font-body); cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.rs-add-btn:hover { box-shadow: 0 2px 8px rgba(210,105,30,0.25); }
+.rs-add-btn:active { transform: scale(0.95); }
+
+/* New category form */
+.rs-new-category {
+  border: 2px dashed rgba(61,48,41,0.1); border-radius: var(--radius-md);
+  padding: 14px; margin-top: 4px;
+}
+.rs-new-category-btn {
+  width: 100%; height: 40px; border: none; border-radius: var(--radius-md);
+  background: transparent; color: var(--text-tertiary); font-size: 13px;
+  font-family: var(--font-body); cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.rs-new-category-btn:hover { color: var(--primary); background: var(--primary-soft); }
+
+/* Delete category */
+.rs-del-category {
+  border: none; background: none; color: var(--text-tertiary); font-size: 11px;
+  cursor: pointer; padding: 2px 6px; border-radius: var(--radius-sm); transition: all 0.2s;
+}
+.rs-del-category:hover { color: var(--danger); background: var(--danger-soft); }
+
+/* Reset button */
+.rs-footer-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(61,48,41,0.06); }
+.rs-reset-btn {
+  flex: 1; height: 38px; border: 1px solid rgba(61,48,41,0.1); border-radius: var(--radius-md);
+  background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 500;
+  font-family: var(--font-body); cursor: pointer; transition: all 0.2s;
+}
+.rs-reset-btn:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-soft); }
+
+/* ============================================
+   Materials Panel
+   ============================================ */
+.materials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.material-item { position: relative; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-hover); }
+.material-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+.material-item-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: white; font-size: 10px; padding: 3px 6px; text-align: center; }
+.material-item-delete { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; border: none; background: rgba(0,0,0,0.5); color: white; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* ============================================
+   Notes item style
+   ============================================ */
+.note-item {
+  padding: 10px 14px; background: var(--bg-card); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm); margin-bottom: 8px; position: relative;
+}
+.note-item-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+.note-item-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.note-item-delete { position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; border: none; border-radius: 50%; background: transparent; color: var(--text-tertiary); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+.note-item-delete:hover { background: var(--danger-soft); color: var(--danger); }
+.note-item-edit { position: absolute; top: 8px; right: 30px; width: 20px; height: 20px; border: none; border-radius: 50%; background: transparent; color: var(--text-tertiary); cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+.note-item-edit:hover { color: var(--primary); background: var(--primary-soft); }
+
+/* Transport raw table (原样渲染) */
+.transport-raw-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: var(--radius-sm); overflow: hidden; margin-top: 6px; }
+.transport-raw-table th { background: var(--bg-hover); padding: 6px 10px; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: left; }
+.transport-raw-table td { padding: 6px 10px; font-size: 12px; color: var(--text-primary); border-top: 1px solid rgba(61, 48, 41, 0.05); }
+.transport-raw-content { font-size: 12px; color: var(--text-primary); line-height: 1.6; margin-top: 4px; }
+.transport-raw-content strong { font-weight: 600; color: var(--text-primary); }
+.transport-raw-content em { font-style: italic; }
+
+/* Transport sub-sections (随身携带/行李寄存) */
+.transport-sub-section { margin-top: 12px; }
+.transport-sub-title { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+.transport-sub-add { width: 20px; height: 20px; border: 1px dashed var(--text-tertiary); border-radius: 50%; background: transparent; color: var(--text-tertiary); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.transport-sub-add:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+.transport-sub-list { list-style: none; padding: 0; margin: 0; }
+.transport-sub-list li { font-size: 12px; color: var(--text-primary); padding: 4px 0; padding-left: 12px; position: relative; }
+.transport-sub-list li::before { content: '•'; position: absolute; left: 0; color: var(--text-tertiary); }
 </style>
 </head>
 
@@ -807,6 +1582,9 @@ body::before {
      App Shell
      ============================================ -->
 <div class="app-container">
+
+  <!-- ===== PAGE: 碎片 ===== -->
+  <div class="page-section active" id="pageFragments">
   <!-- Nav Bar -->
   <nav class="nav-bar">
     <div class="nav-title">我的<span>碎片</span></div>
@@ -877,6 +1655,115 @@ body::before {
 
   <!-- Timeline -->
   <div class="timeline" id="timeline"></div>
+  </div><!-- /pageFragments -->
+
+  <!-- ===== PAGE: 旅行 ===== -->
+  <div class="page-section" id="pageTravel">
+    <!-- Travel List View -->
+    <div id="travelListView">
+      <nav class="travel-nav">
+        <div class="travel-nav-title">我的<span>旅行</span></div>
+        <div class="nav-actions">
+          <button class="nav-btn" id="travelImportJsonBtn" title="导入 JSON">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </button>
+          <button class="nav-btn" id="travelExportJsonBtn" title="导出 JSON">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+          <button class="nav-btn" id="manualRefreshBtn" title="手动刷新">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+          </button>
+          <button class="nav-btn" id="replySettingsBtn" title="回复规则设置">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+        </div>
+      </nav>
+      <div class="travel-list" id="travelList"></div>
+    </div>
+
+    <!-- Trip Detail View -->
+    <div class="trip-detail" id="tripDetailView">
+      <nav class="trip-detail-nav">
+        <button class="trip-back-btn" id="tripBackBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="trip-detail-title" id="tripDetailTitle">行程详情</div>
+        <button class="trip-refresh-btn" id="tripRefreshBtn" title="刷新">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+        </button>
+      </nav>
+      <div id="flightCard" class="flight-card"></div>
+      <div id="hotelTimeline" class="hotel-timeline"></div>
+      <div id="dayTabs" class="day-tabs"></div>
+      <div id="dayContent" class="day-content"></div>
+      <div id="transportPanel"></div>
+      <div class="sub-tabs" id="subTabs">
+        <button class="sub-tab active" data-panel="notes">📝 记事</button>
+        <button class="sub-tab" data-panel="checklist">✅ 清单</button>
+        <button class="sub-tab" data-panel="lookup">🗺️ 速查</button>
+        <button class="sub-tab" data-panel="materials">📎 材料</button>
+      </div>
+      <div class="sub-content" id="subContent">
+        <div class="sub-panel active" id="panelNotes"></div>
+        <div class="sub-panel" id="panelChecklist"></div>
+        <div class="sub-panel" id="panelLookup"></div>
+        <div class="sub-panel" id="panelMaterials"></div>
+      </div>
+    </div>
+  </div><!-- /pageTravel -->
+
+</div>
+
+<!-- Bottom Tab Bar -->
+<div class="tab-bar">
+  <button class="tab-item active" data-page="pageFragments">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+    碎片
+  </button>
+  <button class="tab-item" data-page="pageTravel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>
+    </svg>
+    旅行
+  </button>
+</div>
+
+<!-- Reply Settings Panel -->
+<div class="reply-settings-overlay" id="replySettingsOverlay"></div>
+<div class="reply-settings-panel" id="replySettingsPanel">
+  <div class="rs-header">
+    <div class="rs-title">💬 回复规则设置</div>
+    <button class="rs-close" id="rsCloseBtn">✕</button>
+  </div>
+  <div class="rs-body">
+    <div class="rs-tab-bar">
+      <button class="rs-tab active" data-rs-tab="fragment">碎片回复</button>
+      <button class="rs-tab" data-rs-tab="travel">旅行回复</button>
+    </div>
+    <div class="rs-tab-content active" id="rsFragmentContent"></div>
+    <div class="rs-tab-content" id="rsTravelContent"></div>
+  </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
@@ -900,6 +1787,25 @@ body::before {
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- Hidden inputs for travel -->
+<input type="file" id="mdImportInput" accept=".md,text/markdown" style="display:none">
+<input type="file" id="travelJsonImportInput" accept=".json,application/json" style="display:none">
+<input type="file" id="materialUploadInput" accept="image/*" style="display:none">
+<input type="file" id="hotelImageInput" accept="image/*" style="display:none">
+<input type="file" id="attachmentImageInput" accept="image/*" multiple style="display:none">
+<input type="file" id="checkinImageInput" accept="image/*" multiple style="display:none">
+
+<!-- Form Modal (通用编辑弹窗) -->
+<div class="form-modal-overlay" id="formModal">
+  <div class="form-modal-box">
+    <div class="form-modal-header">
+      <div class="form-modal-title" id="formModalTitle">编辑</div>
+      <button class="form-modal-close" id="formModalClose">&times;</button>
+    </div>
+    <div id="formModalBody"></div>
+  </div>
+</div>
+
 <!-- ============================================
      JavaScript
      ============================================ -->
@@ -910,8 +1816,9 @@ body::before {
   /* ============================
      Constants & State
      ============================ */
-  const APP_VERSION = '1.0.5';
+  const APP_VERSION = '2.1.0';
   const STORAGE_KEY = 'my_fragments_data';
+  const TRAVEL_STORAGE_KEY = 'my_travel_trips';
   const MAX_IMG_WIDTH = 800;
   const IMG_QUALITY = 0.7;
 
@@ -921,6 +1828,11 @@ body::before {
   let searchQuery = '';
   let debounceTimer = null;
 
+  // Travel state
+  let trips = [];
+  let currentTripId = null;
+  let currentDayIndex = 0;
+
   /* ============================
      Light Reply Config
      ============================ */
@@ -928,7 +1840,7 @@ body::before {
   const BOT_NAME = '纸苹果';
   const BOT_HANDLE = '@xyz613630';
 
-  const REPLY_RULES = {
+  let REPLY_RULES = {
     affection: {
       keywords: ['想你', '喜欢你', '爱你', '好想你', '想哥哥', '哥哥', '在吗', '陪我'],
       replies: [
@@ -1023,7 +1935,7 @@ body::before {
   };
 
   const EMOJI_POOL = ['☁️', '🫧', '🌙', '✨', '🌿', '☀️', '🌈', '😊'];
-  const DEFAULT_REPLIES = [
+  let DEFAULT_REPLIES = [
     '我在看着，你继续就好。',
     '今天也留下了一点痕迹。',
     '我会记住这些小瞬间。',
@@ -1032,17 +1944,204 @@ body::before {
     '真不愧是我的妹妹。',
     '看到你在认真过自己的生活就好。'
   ];
-  const LATE_NIGHT_REPLIES = [
+  let LATE_NIGHT_REPLIES = [
     '现在已经很晚了，快去休息吧。',
     '今天可以结束在这里了。',
     '剩下的明天再做也来得及。',
     '今天辛苦了，快去休息吧。'
   ];
-  const BUSY_DAY_REPLIES = [
+  let BUSY_DAY_REPLIES = [
     '今天留下了很多东西。',
     '这一天，好像挺满的。',
     '我会记住今天。'
   ];
+
+  /* ============================
+     Travel Reply Config (旅行自动回复)
+     ============================ */
+  let TRAVEL_REPLY_RULES = {
+    airport: {
+      keywords: ['航班', '机场', '登机', '值机', '安检', '飞机', '起飞', '降落', '航站楼'],
+      replies: [
+        '记得预留一点时间，别在机场忙成小陀螺。',
+        '安检前把水喝掉，登机后好好休息。',
+        '飞行途中记得看看窗外，说不定有惊喜。',
+        '到了机场就放松吧，旅途正式开始了。'
+      ]
+    },
+    depart: {
+      keywords: ['出发', '启程', '开始', '上路', '走起', '要去', '准备去'],
+      replies: [
+        '终于要出发了。',
+        '感觉会是很特别的一段旅程。',
+        '一切都准备好了吗？出发吧！',
+        '好好享受这趟旅行。'
+      ]
+    },
+    hotel: {
+      keywords: ['酒店', '民宿', '入住', '退房', '旅馆', '住宿', 'check in', 'check out', 'hotel'],
+      replies: [
+        '看起来会是个很舒服的地方。',
+        '到了就好好休息一下吧。',
+        '希望房间能让你满意。',
+        '旅途劳累，先放下行李好好歇歇。'
+      ]
+    },
+    food: {
+      keywords: ['吃', '餐', '美食', '寿司', '拉面', '料理', '小吃', '甜品', '咖啡', '居酒屋', '烤肉', '午餐', '晚餐', '早餐'],
+      replies: [
+        '一定要帮我也尝一口。',
+        '这家听起来很不错，好好享受。',
+        '旅行中的美食是最好的记忆。',
+        '吃饱了才有力气继续逛。'
+      ]
+    },
+    scenery: {
+      keywords: ['山', '海', '湖', '神社', '寺', '公园', '城堡', '塔', '花', '樱花', '紫阳花', '温泉', '泡汤', '大室山', '展望', '海岸', '瀑布'],
+      replies: [
+        '这种地方，一定要慢慢看。',
+        '帮我也看一眼那边的风景。',
+        '有些风景，只有到了才知道有多好。',
+        '记得用眼睛多看一会儿，手机可以放一放。'
+      ]
+    },
+    transport: {
+      keywords: ['电车', '新干线', '巴士', '地铁', '出租车', '打车', '踊り子', '特急', '列车', '车站', '换乘'],
+      replies: [
+        '坐车的时候可以看看窗外，放空一下。',
+        '别坐过站了哦。',
+        '交通顺利的话，今天应该能很充实。',
+        '路上注意安全，不用赶。'
+      ]
+    },
+    shopping: {
+      keywords: ['买', '逛', '购物', '商场', '药妆', '纪念品', '手办', '百货', '免税', '银座', '涩谷', '秋叶原'],
+      replies: [
+        '买到喜欢的东西了吗？',
+        '逛街也是旅行的一部分，开心就好。',
+        '别忘了给自己也买点什么。',
+        '手提袋别拿太多，手会累的。'
+      ]
+    }
+  };
+
+  let TRAVEL_DEFAULT_REPLIES = [
+    '旅途中的每一步都值得记住。',
+    '好好享受这段时光。',
+    '又完成了一个行程，继续出发吧。',
+    '我在默默关注你的旅途。',
+    '今天也是充实的一天。',
+    '每一次出发都是一种勇气。',
+    '这趟旅程，一定会留下很多美好。'
+  ];
+
+  let TRAVEL_DONE_REPLIES = [
+    '完成了！接下来去哪？',
+    '又打卡一个地方，棒。',
+    '这一站结束了，下一站会更精彩。',
+    '做得很好，继续享受旅途吧。',
+    '一步一步，都在变成回忆。',
+    '打了个漂亮的✓。'
+  ];
+
+  let TRAVEL_IMAGE_UPLOAD_REPLIES = [
+    '照片看起来不错！',
+    '用镜头记录下来了，很好。',
+    '这张一定要留好。',
+    '旅途中的画面，比文字更有力量。',
+    '拍到了，这一刻就不会溜走了。',
+    '好好保存这些瞬间。'
+  ];
+
+  /**
+   * 旅行自动回复生成器
+   * @param {string} text - 匹配文本（行程名称、打卡标题+内容等）
+   * @param {string} trigger - 触发场景 'add' | 'done' | 'checkin' | 'image_upload'
+   * @returns {string|null}
+   */
+  function generateTravelReply(text, trigger) {
+    const lowerText = (text || '').toLowerCase();
+
+    // 图片上传触发：优先使用图片专属回复
+    if (trigger === 'image_upload') {
+      let reply = randomPick(TRAVEL_IMAGE_UPLOAD_REPLIES);
+      if (Math.random() < 0.3) reply += ' ' + randomPick(EMOJI_POOL);
+      return reply;
+    }
+
+    // 优先级1：关键词匹配（动态遍历所有分类）
+    const ruleOrder = Object.keys(TRAVEL_REPLY_RULES);
+    for (const category of ruleOrder) {
+      const rule = TRAVEL_REPLY_RULES[category];
+      if (rule && rule.keywords && rule.keywords.some(kw => lowerText.includes(kw.toLowerCase()))) {
+        let reply = randomPick(rule.replies);
+        if (Math.random() < 0.3) reply += ' ' + randomPick(EMOJI_POOL);
+        return reply;
+      }
+    }
+
+    // 优先级2：触发场景兜底
+    if (trigger === 'done') {
+      let reply = randomPick(TRAVEL_DONE_REPLIES);
+      if (Math.random() < 0.3) reply += ' ' + randomPick(EMOJI_POOL);
+      return reply;
+    }
+
+    // 优先级3：通用旅行兜底
+    let reply = randomPick(TRAVEL_DEFAULT_REPLIES);
+    if (Math.random() < 0.3) reply += ' ' + randomPick(EMOJI_POOL);
+    return reply;
+  }
+
+  /**
+   * 生成旅行回复的 HTML 片段（用于打卡卡片 — 保持现有样式）
+   * @param {string} replyText
+   * @returns {string}
+   */
+  function travelReplyHtml(replyText) {
+    if (!replyText) return '';
+    return `<div class="light-reply" style="margin-top:10px;padding-top:10px">
+      <img class="light-reply-avatar" src="${AVATAR_URL}" alt="${BOT_NAME}" onerror="this.style.display='none'">
+      <div class="light-reply-content">
+        <div class="light-reply-header">
+          <span class="light-reply-name">${BOT_NAME}</span>
+          <span class="light-reply-handle">${BOT_HANDLE}</span>
+        </div>
+        <div class="light-reply-text">${escapeHtml(replyText)}</div>
+      </div>
+    </div>`;
+  }
+
+  /**
+   * 行前提示气泡（行程条上方）
+   */
+  function itineraryPreHintHtml(replyText) {
+    if (!replyText) return '';
+    return `<div class="itinerary-pre-hint">
+      <img class="hint-avatar" src="${AVATAR_URL}" alt="${BOT_NAME}" onerror="this.style.display='none'">
+      <div class="hint-body">
+        <div class="hint-name">${BOT_NAME}</div>
+        <div class="hint-text">${escapeHtml(replyText)}</div>
+      </div>
+    </div>`;
+  }
+
+  /**
+   * 行程完成后帖子回复（行程条下方）
+   */
+  function itineraryPostReplyHtml(replyText) {
+    if (!replyText) return '';
+    return `<div class="itinerary-post-reply">
+      <img class="reply-avatar" src="${AVATAR_URL}" alt="${BOT_NAME}" onerror="this.style.display='none'">
+      <div class="reply-body">
+        <div class="reply-header">
+          <span class="reply-name">${BOT_NAME}</span>
+          <span class="reply-handle">${BOT_HANDLE}</span>
+        </div>
+        <div class="reply-text">${escapeHtml(replyText)}</div>
+      </div>
+    </div>`;
+  }
 
   /* ============================
      DOM References
@@ -1581,11 +2680,11 @@ body::before {
     const postMinutes = postDate.getMinutes();
     const postTimeInMin = postHour * 60 + postMinutes;
 
-    // 优先级1：关键词匹配
-    const ruleOrder = ['affection', 'sick', 'food', 'sleep', 'emotion', 'effort', 'morning', 'night'];
+    // 优先级1：关键词匹配（动态遍历所有分类）
+    const ruleOrder = Object.keys(REPLY_RULES);
     for (const category of ruleOrder) {
       const rule = REPLY_RULES[category];
-      if (rule.keywords.some(kw => lowerText.includes(kw))) {
+      if (rule && rule.keywords && rule.keywords.some(kw => lowerText.includes(kw))) {
         let reply = randomPick(rule.replies);
         if (Math.random() < 0.4) {
           reply += randomPick(EMOJI_POOL);
@@ -1736,13 +2835,16 @@ body::before {
             e.respondWith(fetch(e.request));
             return;
           }
-          // 其他资源：网络优先，失败则用缓存
+          // 其他资源：缓存优先，缓存没有则走网络
           e.respondWith(
-            fetch(e.request).then((res) => {
-              const clone = res.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
-              return res;
-            }).catch(() => caches.match(e.request))
+            caches.match(e.request).then((cached) => {
+              if (cached) return cached;
+              return fetch(e.request).then((res) => {
+                const clone = res.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+                return res;
+              });
+            })
           );
         });
 
@@ -1770,25 +2872,27 @@ body::before {
   }
 
   /* ============================
-     Auto Update Check
+     Manual Update Check (替代自动检查)
      ============================ */
   let updateBannerShown = false;
 
   function checkForUpdate() {
+    showToast('🔄 正在检查更新...');
     fetch('./version.json?t=' + Date.now())
       .then((res) => res.ok ? res.json() : null)
       .then((data) => {
         if (data && data.version && data.version !== APP_VERSION) {
           showUpdateBanner();
+        } else {
+          showToast('✅ 已是最新版本');
         }
       })
-      .catch(() => {}); // 网络不通就静默
+      .catch(() => { showToast('⚠️ 网络不可用，离线模式'); });
   }
 
   function showUpdateBanner() {
     if (updateBannerShown) return;
     updateBannerShown = true;
-
     const banner = document.createElement('div');
     banner.id = 'updateBanner';
     banner.style.cssText = `
@@ -1809,8 +2913,6 @@ body::before {
       ">刷新</button>
     `;
     document.body.prepend(banner);
-
-    // 注入动画
     if (!document.getElementById('updateBannerStyle')) {
       const style = document.createElement('style');
       style.id = 'updateBannerStyle';
@@ -1819,28 +2921,1978 @@ body::before {
     }
   }
 
-  // 从后台切回前台时检查更新
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      checkForUpdate();
+  // 手动刷新按钮绑定
+  document.getElementById('manualRefreshBtn').addEventListener('click', checkForUpdate);
+  document.getElementById('tripRefreshBtn').addEventListener('click', checkForUpdate);
+
+  /* ============================
+     Bottom Tab Bar Switching
+     ============================ */
+  document.querySelectorAll('.tab-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.page).classList.add('active');
+    });
+  });
+
+  /* ============================
+     Travel Module
+     ============================ */
+  const mdImportInput = document.getElementById('mdImportInput');
+  const travelJsonImportInput = document.getElementById('travelJsonImportInput');
+  const materialUploadInput = document.getElementById('materialUploadInput');
+  const hotelImageInput = document.getElementById('hotelImageInput');
+  const attachmentImageInput = document.getElementById('attachmentImageInput');
+  const checkinImageInput = document.getElementById('checkinImageInput');
+  const travelList = document.getElementById('travelList');
+  const tripDetailView = document.getElementById('tripDetailView');
+  const travelListView = document.getElementById('travelListView');
+  const formModal = document.getElementById('formModal');
+  const formModalTitle = document.getElementById('formModalTitle');
+  const formModalBody = document.getElementById('formModalBody');
+  const formModalClose = document.getElementById('formModalClose');
+
+  // Pending data for form modals
+  let formModalCallback = null;
+  let pendingAttachmentImages = [];
+
+  function loadTrips() {
+    try {
+      const data = localStorage.getItem(TRAVEL_STORAGE_KEY);
+      trips = data ? JSON.parse(data) : [];
+    } catch (e) { trips = []; }
+  }
+
+  function saveTrips() {
+    try {
+      localStorage.setItem(TRAVEL_STORAGE_KEY, JSON.stringify(trips));
+    } catch (e) {
+      if (e.name === 'QuotaExceededError') showToast('⚠️ 存储空间不足');
+    }
+  }
+
+  function getCurrentTrip() {
+    return trips.find(t => t.id === currentTripId);
+  }
+
+  function genId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  // Form modal helpers
+  function openFormModal(title, bodyHtml, callback) {
+    formModalTitle.textContent = title;
+    formModalBody.innerHTML = bodyHtml;
+    formModalCallback = callback;
+    formModal.classList.add('active');
+  }
+
+  function closeFormModal() {
+    formModal.classList.remove('active');
+    formModalCallback = null;
+    pendingAttachmentImages = [];
+  }
+
+  formModalClose.addEventListener('click', closeFormModal);
+  formModal.addEventListener('click', (e) => { if (e.target === formModal) closeFormModal(); });
+
+  function renderTravelList() {
+    if (trips.length === 0) {
+      travelList.innerHTML = `
+        <div class="travel-empty">
+          <span class="travel-empty-icon">✈️</span>
+          <div style="font-size:14px;margin-bottom:16px">还没有旅行计划</div>
+          <div class="travel-action-btns">
+            <button class="travel-action-btn primary" id="importMdBtn">📄 导入 MD 攻略</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('importMdBtn').addEventListener('click', () => mdImportInput.click());
+    } else {
+      let html = `<div class="travel-action-btns" style="margin-top:16px;margin-bottom:8px">
+        <button class="travel-action-btn primary" id="importMdBtn2">📄 导入新行程</button>
+      </div>`;
+      trips.forEach(trip => {
+        html += `
+          <div class="trip-card" data-id="${trip.id}">
+            <button class="trip-delete-btn" data-delete-id="${trip.id}" title="删除行程">🗑</button>
+            <div class="trip-card-header">
+              <div class="trip-card-title">${escapeHtml(trip.title)}</div>
+              <div class="trip-card-date">${trip.dateRange || ''}</div>
+            </div>
+            <div class="trip-card-route">${escapeHtml(trip.route || '')}</div>
+          </div>
+        `;
+      });
+      travelList.innerHTML = html;
+      const importBtn2 = document.getElementById('importMdBtn2');
+      if (importBtn2) importBtn2.addEventListener('click', () => mdImportInput.click());
+      // Delete trip buttons
+      travelList.querySelectorAll('.trip-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const tripId = btn.dataset.deleteId;
+          const t = trips.find(t => t.id === tripId);
+          const name = t ? t.title : '此行程';
+          openFormModal('确认删除', `
+            <div style="text-align:center;padding:12px 0">
+              <div style="font-size:36px;margin-bottom:12px">🗑️</div>
+              <div style="font-size:14px;color:var(--text-secondary);margin-bottom:20px">确定删除「${escapeHtml(name)}」吗？<br>此操作不可恢复。</div>
+              <div style="display:flex;gap:12px;justify-content:center">
+                <button class="form-submit-btn" style="background:var(--text-tertiary);flex:1" id="delTripCancel">取消</button>
+                <button class="form-submit-btn" style="background:var(--danger);flex:1" id="delTripConfirm">删除</button>
+              </div>
+            </div>
+          `);
+          setTimeout(() => {
+            document.getElementById('delTripCancel').addEventListener('click', () => closeFormModal());
+            document.getElementById('delTripConfirm').addEventListener('click', () => {
+              trips = trips.filter(t => t.id !== tripId);
+              saveTrips();
+              closeFormModal();
+              renderTravelList();
+              showToast('🗑️ 行程已删除');
+            });
+          }, 50);
+        });
+      });
+      travelList.querySelectorAll('.trip-card').forEach(card => {
+        card.addEventListener('click', () => openTripDetail(card.dataset.id));
+      });
+    }
+  }
+
+  /* ============================
+     MD Parser (修复版 - 交通独立解析)
+     ============================ */
+  function parseTravelMd(mdText) {
+    const trip = {
+      id: genId(),
+      title: '',
+      dateRange: '',
+      route: '',
+      flights: [],
+      hotels: [],
+      transport: [],
+      carry: [],
+      luggage: [],
+      days: [],
+      checklist: [],
+      lookup: [],
+      lookupRaw: '',
+      notes: [],
+      materials: [],
+      createdAt: new Date().toISOString()
+    };
+
+    const lines = mdText.split('\n');
+    let currentSection = '';
+    let currentDay = null;
+    let currentTransport = null;
+    let inTable = false;
+    let tableHeaders = [];
+    let checklistSubTitle = '';
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // Skip image reference lines (e.g. @image:uuid.png)
+      if (trimmed.startsWith('@image:') || trimmed.match(/^!\[.*\]\(.*\)$/)) continue;
+
+      // Title
+      if (trimmed.startsWith('# ') && !trip.title) {
+        trip.title = trimmed.replace(/^# /, '').replace(/\*\*/g, '');
+        continue;
+      }
+
+      // Date range from blockquote
+      if (trimmed.startsWith('> 📅') || (trimmed.startsWith('>') && trimmed.includes('出行时间'))) {
+        const m = trimmed.match(/(\d{4}年\d+月\d+日.*?[—–-]\s*\d+月\d+日)/);
+        if (m) trip.dateRange = m[1].replace(/[—–]/g, '-').replace('年','/').replace(/月/g,'/').replace('日','');
+        continue;
+      }
+
+      // Section headers (## level)
+      if (trimmed.startsWith('## ')) {
+        const h2 = trimmed.replace(/^## /, '').replace(/\*\*/g, '');
+        if (h2.includes('航班')) currentSection = 'flights';
+        else if (h2.includes('住宿')) currentSection = 'hotels';
+        else if (h2.includes('交通')) { currentSection = 'transport'; currentTransport = null; }
+        else if (h2.includes('随身') || h2.includes('携带')) { currentSection = 'carry'; }
+        else if (h2.includes('行李') && h2.includes('寄存')) { currentSection = 'luggage'; }
+        else if (h2.includes('每日行程') || h2.includes('日程')) { currentSection = 'days'; currentDay = null; }
+        else if (h2.includes('餐饮')) currentSection = 'food';
+        else if (h2.includes('景点')) currentSection = 'spots';
+        else if ((h2.includes('行李') && !h2.includes('寄存')) || h2.includes('备忘') || h2.includes('清单')) { currentSection = 'checklist'; checklistSubTitle = ''; }
+        else if (h2.includes('预算')) currentSection = 'budget';
+        else if (h2.includes('注意') || h2.includes('记事') || h2.includes('备注')) currentSection = 'notes';
+        else currentSection = '';
+        inTable = false;
+        continue;
+      }
+
+      // Sub-headers (### level) — critical fix: only create Day in 'days' section
+      if (trimmed.startsWith('### ')) {
+        inTable = false;
+        tableHeaders = [];
+
+        if (currentSection === 'days' || currentSection === 'day-detail') {
+          // Only create new Day if this ### is in days section
+          const dayMatch = trimmed.match(/Day\s*(\d+)/i);
+          if (dayMatch) {
+            const dayLabel = trimmed.replace(/^###\s*[\p{Emoji}\u200d\ufe0f]*\s*/u, '');
+            currentDay = {
+              index: parseInt(dayMatch[1]),
+              label: dayLabel,
+              checkpoints: []
+            };
+            trip.days.push(currentDay);
+            currentSection = 'day-detail';
+            continue;
+          }
+        }
+
+        if (currentSection === 'transport') {
+          const subTitle = trimmed.replace(/^###\s*[\p{Emoji}\u200d\ufe0f]*\s*/u, '').trim();
+          // Check if it's carry/luggage sub-section
+          if (subTitle.includes('随身') || subTitle.includes('携带')) {
+            currentSection = 'carry'; continue;
+          }
+          if (subTitle.includes('行李') && subTitle.includes('寄存')) {
+            currentSection = 'luggage'; continue;
+          }
+          // Transport sub-section title — store raw lines
+          currentTransport = { title: subTitle, rawLines: [] };
+          trip.transport.push(currentTransport);
+          continue;
+        }
+
+        if (currentSection === 'checklist') {
+          checklistSubTitle = trimmed.replace(/^###\s*/, '');
+          continue;
+        }
+
+        continue;
+      }
+
+      // Parse tables
+      if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+        const cells = trimmed.split('|').slice(1, -1).map(c => c.trim());
+        // Store raw table lines for transport and lookup
+        if (currentSection === 'transport' && currentTransport) { currentTransport.rawLines.push(trimmed); }
+        if (cells.every(c => /^[-:]+$/.test(c))) { inTable = true; continue; }
+        if (!inTable) { tableHeaders = cells; inTable = true; continue; }
+
+        // Flight table
+        if (currentSection === 'flights' && tableHeaders.length >= 4) {
+          const seg = {};
+          tableHeaders.forEach((h, idx) => {
+            const val = (cells[idx] || '').replace(/\*\*/g, '');
+            if (h.includes('航段')) seg.segment = val;
+            else if (h.includes('日期')) seg.date = val;
+            else if (h.includes('航班')) seg.flight = val;
+            else if (h.includes('行程') || h.includes('路线')) seg.route = val;
+            else if (h.includes('时间')) seg.time = val;
+          });
+          if (seg.flight) trip.flights.push(seg);
+        }
+
+        // Hotel table
+        if (currentSection === 'hotels' && tableHeaders.length >= 3) {
+          const h = { nameJp: '', romaji: '', address: '', checkIn: '', checkOut: '', room: '', price: '', note: '', images: [], features: [] };
+          tableHeaders.forEach((hdr, idx) => {
+            const val = (cells[idx] || '').replace(/\*\*/g, '');
+            if (hdr.includes('日期') || hdr.includes('晚')) h.date = val;
+            else if (hdr.includes('住宿') || hdr.includes('酒店') || hdr.includes('名称')) h.name = val;
+            else if (hdr.includes('房型')) h.room = val;
+            else if (hdr.includes('价格') || hdr.includes('费用')) h.price = val;
+            else if (hdr.includes('备注')) h.note = val;
+            else if (hdr.includes('地址')) h.address = val;
+            else if (hdr.includes('入住')) h.checkIn = val;
+            else if (hdr.includes('退房')) h.checkOut = val;
+          });
+          if (h.name) trip.hotels.push(h);
+        }
+
+        // Day detail table (checkpoints)
+        if (currentSection === 'day-detail' && currentDay && tableHeaders.length >= 2) {
+          const cp = { type: 'itinerary', time: (cells[0] || ''), name: (cells[1] || ''), done: false, attachments: [], addReply: generateTravelReply(cells[1] || '', 'add'), doneReply: '' };
+          if (cells[2]) cp.detail = cells[2];
+          currentDay.checkpoints.push(cp);
+        }
+
+        continue;
+      }
+
+      // Non-table lines
+      if (trimmed.startsWith('|')) continue; // broken table line
+      inTable = false;
+
+      // Checklist items (various formats)
+      if (currentSection === 'checklist') {
+        if (trimmed.startsWith('- [') || trimmed.startsWith('- ✅') || trimmed.startsWith('- ☑') || trimmed.startsWith('- ')) {
+          const done = trimmed.includes('[x]') || trimmed.includes('[X]') || trimmed.includes('✅') || trimmed.includes('☑');
+          const text = trimmed.replace(/^-\s*(\[.\]\s*|✅\s*|☑\s*)?/, '').trim();
+          if (text && text.length > 1) trip.checklist.push({ text: (checklistSubTitle ? checklistSubTitle + '：' : '') + text, done });
+        }
+        continue;
+      }
+
+      // Notes section items
+      if (currentSection === 'notes') {
+        if (/^\d+\./.test(trimmed) || trimmed.startsWith('- ')) {
+          const text = trimmed.replace(/^\d+\.\s*/, '').replace(/^-\s*/, '');
+          if (text && text.length > 2) trip.notes.push({ id: genId(), title: text.substring(0, 20), text: text });
+        }
+        continue;
+      }
+
+      // Transport raw lines (non-table content: tips, blockquotes, etc.)
+      if (currentSection === 'transport' && currentTransport && trimmed) {
+        currentTransport.rawLines.push(trimmed);
+        continue;
+      }
+
+      // Carry items (随身携带)
+      if (currentSection === 'carry' && (trimmed.startsWith('- ') || /^\d+\./.test(trimmed))) {
+        const text = trimmed.replace(/^-\s*/, '').replace(/^\d+\.\s*/, '').replace(/\*\*/g, '').trim();
+        if (text) trip.carry.push(text);
+        continue;
+      }
+
+      // Luggage storage items (行李寄存)
+      if (currentSection === 'luggage' && (trimmed.startsWith('- ') || /^\d+\./.test(trimmed) || trimmed.length > 0)) {
+        const text = trimmed.replace(/^-\s*/, '').replace(/^\d+\.\s*/, '').replace(/\*\*/g, '').trim();
+        if (text && text.length > 1) trip.luggage.push(text);
+        continue;
+      }
+
+      // Checkpoint items from list format (- 时间 地点)
+      if (currentSection === 'day-detail' && currentDay && (trimmed.startsWith('- ') || /^\d+\./.test(trimmed))) {
+        const text = trimmed.replace(/^-\s*/, '').replace(/^\d+\.\s*/, '');
+        const timeMatch = text.match(/^(\d{1,2}[:.：]\d{2})\s*(.*)/);
+        if (timeMatch) {
+          currentDay.checkpoints.push({ type: 'itinerary', time: timeMatch[1], name: timeMatch[2], done: false, attachments: [], addReply: generateTravelReply(timeMatch[2], 'add'), doneReply: '' });
+        } else if (text) {
+          currentDay.checkpoints.push({ type: 'itinerary', time: '', name: text, done: false, attachments: [], addReply: generateTravelReply(text, 'add'), doneReply: '' });
+        }
+        continue;
+      }
+    }
+
+    // Build route string
+    if (trip.flights.length >= 1) {
+      trip.route = trip.flights[0].route ? trip.flights[0].route.replace(/\*\*/g, '').replace(/→/g, ' → ') : '';
+    }
+
+    // Extract lookup data from blockquote for hotel enrichment only (not for lookup panel)
+    {
+      const bqMatch = mdText.match(/>\s*\*\*地名[速查对照]*表?\*\*[\s\S]*?(?=\n[^>]|\n\n[^>]|$)/i);
+      if (bqMatch) {
+        const bqLines = bqMatch[0].split('\n').filter(l => l.trim().startsWith('>'));
+        bqLines.forEach(l => {
+          const clean = l.replace(/^>\s*/, '').trim();
+          if (!clean.startsWith('|') || !clean.endsWith('|')) return;
+          const cells = clean.split('|').slice(1, -1).map(c => c.trim());
+          if (cells.every(c => /^[-:]+$/.test(c))) return;
+          if (cells.length >= 2 && cells[0] !== '中文') {
+            trip.lookup.push({ cn: cells[0] || '', jp: cells[1] || '', romaji: cells[2] || '' });
+          }
+        });
+      }
+    }
+
+    // Enrich hotels with japanese names from lookup
+    if (trip.lookup.length > 0 && trip.hotels.length > 0) {
+      trip.hotels.forEach(hotel => {
+        if (!hotel.nameJp) {
+          const match = trip.lookup.find(l => hotel.name && hotel.name.includes(l.cn));
+          if (match) {
+            hotel.nameJp = match.jp;
+            hotel.romaji = match.romaji;
+          }
+        }
+      });
+    }
+
+    // Ensure attachments array exists on all checkpoints
+    trip.days.forEach(day => {
+      day.checkpoints.forEach(cp => {
+        if (!cp.attachments) cp.attachments = [];
+      });
+    });
+
+    return trip;
+  }
+
+  // MD Import handler
+  mdImportInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const trip = parseTravelMd(evt.target.result);
+      if (!trip.title) trip.title = file.name.replace(/\.md$/, '');
+      trips.unshift(trip);
+      saveTrips();
+      renderTravelList();
+      showToast('✈️ 行程已导入：' + trip.title);
+    };
+    reader.readAsText(file);
+    mdImportInput.value = '';
+  });
+
+  /* ============================
+     JSON Export / Import (Travel)
+     ============================ */
+  document.getElementById('travelExportJsonBtn').addEventListener('click', () => {
+    if (trips.length === 0) { showToast('📭 没有可导出的旅行数据'); return; }
+    const exportData = { exportedAt: new Date().toISOString(), version: '2.1.0', trips: trips };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `我的旅行_${getDateStr(new Date())}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`📦 已导出 ${trips.length} 个行程`);
+  });
+
+  document.getElementById('travelImportJsonBtn').addEventListener('click', () => travelJsonImportInput.click());
+
+  travelJsonImportInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = JSON.parse(evt.target.result);
+        let importedTrips = [];
+        if (Array.isArray(data)) importedTrips = data;
+        else if (data && Array.isArray(data.trips)) importedTrips = data.trips;
+        else { showToast('⚠️ JSON 格式不正确'); return; }
+
+        const existingIds = new Set(trips.map(t => t.id));
+        let count = 0;
+        importedTrips.forEach(t => {
+          if (existingIds.has(t.id)) t.id = genId();
+          trips.unshift(t);
+          count++;
+        });
+        if (count === 0) { showToast('⚠️ 未找到有效行程'); return; }
+        saveTrips();
+        renderTravelList();
+        showToast(`📥 成功导入 ${count} 个行程`);
+      } catch (err) { showToast('⚠️ JSON 解析失败'); }
+    };
+    reader.readAsText(file);
+    travelJsonImportInput.value = '';
+  });
+
+  /* ============================
+     Trip Detail Rendering
+     ============================ */
+  function openTripDetail(tripId) {
+    currentTripId = tripId;
+    const trip = getCurrentTrip();
+    if (!trip) return;
+
+    travelListView.style.display = 'none';
+    tripDetailView.classList.add('active');
+    document.getElementById('tripDetailTitle').textContent = trip.title;
+
+    renderFlightCard(trip);
+    renderHotelDetail(trip);
+    renderTransportPanel(trip);
+    renderDayTabs(trip);
+    renderSubPanels(trip);
+  }
+
+  function closeTripDetail() {
+    tripDetailView.classList.remove('active');
+    travelListView.style.display = '';
+    currentTripId = null;
+  }
+
+  document.getElementById('tripBackBtn').addEventListener('click', closeTripDetail);
+
+  function renderFlightCard(trip) {
+    const el = document.getElementById('flightCard');
+    if (!trip.flights || trip.flights.length === 0) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    let html = '<div class="flight-card-title">✈️ 航班信息</div>';
+    trip.flights.forEach(f => {
+      const icon = f.segment && f.segment.includes('返') ? '🛬' : '🛫';
+      html += `
+        <div class="flight-segment">
+          <span class="flight-icon">${icon}</span>
+          <div class="flight-info">
+            <div class="flight-route">${escapeHtml((f.route || '').replace(/\*\*/g, ''))}</div>
+            <div class="flight-meta">${escapeHtml(f.date || '')} · ${escapeHtml((f.flight || '').replace(/\*\*/g, ''))} · ${escapeHtml(f.time || '')}</div>
+          </div>
+        </div>
+      `;
+    });
+    el.innerHTML = html;
+  }
+
+  /* ============================
+     Hotel Detail Card (Enhanced)
+     ============================ */
+  function renderHotelDetail(trip) {
+    const el = document.getElementById('hotelTimeline');
+    if (!trip.hotels || trip.hotels.length === 0) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    el.className = 'hotel-detail-card';
+    let html = '<div class="hotel-detail-card-title">🏨 住宿安排</div>';
+    trip.hotels.forEach((h, idx) => {
+      const name = (h.name || '').replace(/\*\*/g, '').trim();
+      html += `<div class="hotel-detail-item">
+        <button class="hotel-edit-btn" data-hotel="${idx}" title="编辑">✏️</button>
+        <div class="hotel-detail-date">${escapeHtml(h.date || '')}</div>
+        <div class="hotel-detail-name">${escapeHtml(name)}</div>`;
+      if (h.nameJp) html += `<div class="hotel-detail-namejp">${escapeHtml(h.nameJp)}</div>`;
+      if (h.romaji) html += `<div class="hotel-detail-romaji">${escapeHtml(h.romaji)}</div>`;
+      if (h.address) html += `<div class="hotel-detail-address">📍 ${escapeHtml(h.address)}</div>`;
+      html += '<div class="hotel-detail-meta">';
+      if (h.checkIn) html += `<span>🕐 入住 ${escapeHtml(h.checkIn)}</span>`;
+      if (h.checkOut) html += `<span>🕐 退房 ${escapeHtml(h.checkOut)}</span>`;
+      if (h.room) html += `<span>🛏️ ${escapeHtml(h.room)}</span>`;
+      if (h.price) html += `<span>💰 ${escapeHtml(h.price)}</span>`;
+      html += '</div>';
+      if (h.features && h.features.length > 0) {
+        html += '<div class="hotel-detail-features">';
+        h.features.forEach(f => { html += `<span class="tag">${escapeHtml(f)}</span>`; });
+        html += '</div>';
+      }
+      if (h.note) html += `<div style="font-size:11px;color:var(--text-secondary);margin-top:4px">💡 ${escapeHtml(h.note)}</div>`;
+      if (h.images && h.images.length > 0) {
+        html += '<div class="hotel-detail-images">';
+        h.images.forEach(img => { html += `<img src="${img}" alt="预订单" onclick="window._openLightbox('${img.replace(/'/g, "\\'")}')">`; });
+        html += '</div>';
+      }
+      html += `<button class="hotel-upload-btn" data-hotel="${idx}">📎 上传预订单</button>`;
+      html += '</div>';
+    });
+    el.innerHTML = html;
+
+    // Hotel edit buttons
+    el.querySelectorAll('.hotel-edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openHotelEditModal(parseInt(btn.dataset.hotel));
+      });
+    });
+
+    // Hotel image upload buttons
+    el.querySelectorAll('.hotel-upload-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hotelImageInput.dataset.hotelIdx = btn.dataset.hotel;
+        hotelImageInput.click();
+      });
+    });
+  }
+
+  // Hotel image upload handler
+  hotelImageInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const idx = parseInt(hotelImageInput.dataset.hotelIdx);
+    const trip = getCurrentTrip();
+    if (!trip || !trip.hotels[idx]) return;
+    const dataUrl = await compressImage(file);
+    if (dataUrl) {
+      if (!trip.hotels[idx].images) trip.hotels[idx].images = [];
+      trip.hotels[idx].images.push(dataUrl);
+      saveTrips();
+      renderHotelDetail(trip);
+      showToast('📎 预订单已上传');
+    }
+    hotelImageInput.value = '';
+  });
+
+  function openHotelEditModal(idx) {
+    const trip = getCurrentTrip();
+    if (!trip || !trip.hotels[idx]) return;
+    const h = trip.hotels[idx];
+    const body = `
+      <div class="form-group"><label class="form-label">中文名</label><input class="form-input" id="heditName" value="${escapeHtml(h.name || '')}"></div>
+      <div class="form-group"><label class="form-label">日文名</label><input class="form-input" id="heditNameJp" value="${escapeHtml(h.nameJp || '')}"></div>
+      <div class="form-group"><label class="form-label">罗马音</label><input class="form-input" id="heditRomaji" value="${escapeHtml(h.romaji || '')}"></div>
+      <div class="form-group"><label class="form-label">地址</label><input class="form-input" id="heditAddress" value="${escapeHtml(h.address || '')}"></div>
+      <div style="display:flex;gap:10px">
+        <div class="form-group" style="flex:1"><label class="form-label">入住时间</label><input class="form-input" id="heditCheckIn" value="${escapeHtml(h.checkIn || '')}"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">退房时间</label><input class="form-input" id="heditCheckOut" value="${escapeHtml(h.checkOut || '')}"></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div class="form-group" style="flex:1"><label class="form-label">房型</label><input class="form-input" id="heditRoom" value="${escapeHtml(h.room || '')}"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">价格</label><input class="form-input" id="heditPrice" value="${escapeHtml(h.price || '')}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">备注</label><input class="form-input" id="heditNote" value="${escapeHtml(h.note || '')}"></div>
+      <button class="form-submit-btn" id="heditSave">保存</button>
+    `;
+    openFormModal('编辑住宿信息', body);
+    setTimeout(() => {
+      document.getElementById('heditSave').addEventListener('click', () => {
+        h.name = document.getElementById('heditName').value.trim();
+        h.nameJp = document.getElementById('heditNameJp').value.trim();
+        h.romaji = document.getElementById('heditRomaji').value.trim();
+        h.address = document.getElementById('heditAddress').value.trim();
+        h.checkIn = document.getElementById('heditCheckIn').value.trim();
+        h.checkOut = document.getElementById('heditCheckOut').value.trim();
+        h.room = document.getElementById('heditRoom').value.trim();
+        h.price = document.getElementById('heditPrice').value.trim();
+        h.note = document.getElementById('heditNote').value.trim();
+        saveTrips();
+        renderHotelDetail(trip);
+        closeFormModal();
+        showToast('✅ 住宿信息已更新');
+      });
+    }, 50);
+  }
+
+  /* ============================
+     Transport Panel (折叠)
+     ============================ */
+  // Inline markdown: **bold** → <strong>, *italic* → <em>
+  function renderInlineMd(text) {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code style="background:var(--bg-hover);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>');
+  }
+
+  // Convert raw markdown table lines to HTML table
+  function mdTableToHtml(rawLines) {
+    const tableLines = rawLines.filter(l => l.startsWith('|') && l.endsWith('|'));
+    if (tableLines.length < 2) return '';
+    let html = '<table class="transport-raw-table">';
+    let headerDone = false;
+    for (let i = 0; i < tableLines.length; i++) {
+      const cells = tableLines[i].split('|').slice(1, -1).map(c => c.trim());
+      // Separator row
+      if (cells.every(c => /^[-:]+$/.test(c))) { headerDone = true; continue; }
+      if (!headerDone) {
+        html += '<thead><tr>' + cells.map(c => `<th>${renderInlineMd(escapeHtml(c))}</th>`).join('') + '</tr></thead><tbody>';
+      } else {
+        html += '<tr>' + cells.map(c => `<td>${renderInlineMd(escapeHtml(c))}</td>`).join('') + '</tr>';
+      }
+    }
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function renderTransportPanel(trip) {
+    const el = document.getElementById('transportPanel');
+    const hasTransport = trip.transport && trip.transport.length > 0;
+    const hasCarry = trip.carry && trip.carry.length > 0;
+    const hasLuggage = trip.luggage && trip.luggage.length > 0;
+    if (!hasTransport && !hasCarry && !hasLuggage) { el.innerHTML = ''; return; }
+
+    let html = `<div class="transport-panel" id="transportPanelBox">
+      <div class="transport-header">
+        <span class="transport-header-title">🚃 交通参考</span>
+        <span class="transport-toggle">▼</span>
+      </div>
+      <div class="transport-body">`;
+
+    // Transport sections with raw rendering
+    if (hasTransport) {
+      trip.transport.forEach(sec => {
+        html += `<div class="transport-section"><div class="transport-section-title">${renderInlineMd(escapeHtml(sec.title))}</div>`;
+        // Separate table lines from non-table lines
+        const tableLines = sec.rawLines.filter(l => l.startsWith('|'));
+        const nonTableLines = sec.rawLines.filter(l => !l.startsWith('|'));
+        // Render table
+        if (tableLines.length >= 2) {
+          html += mdTableToHtml(sec.rawLines);
+        }
+        // Render non-table content (tips, notes, etc.)
+        if (nonTableLines.length > 0) {
+          html += '<div class="transport-raw-content">';
+          nonTableLines.forEach(line => {
+            if (line.startsWith('>')) {
+              html += `<div class="transport-tip">💡 ${renderInlineMd(escapeHtml(line.replace(/^>\s*/, '')))}</div>`;
+            } else if (line.startsWith('💡') || line.startsWith('⚠️')) {
+              html += `<div class="transport-tip">${renderInlineMd(escapeHtml(line))}</div>`;
+            } else {
+              html += `<div>${renderInlineMd(escapeHtml(line))}</div>`;
+            }
+          });
+          html += '</div>';
+        }
+        html += '</div>';
+      });
+    }
+
+    // 随身携带 sub-section
+    html += `<div class="transport-sub-section">
+      <div class="transport-sub-title">🎒 随身携带 <button class="transport-sub-add" data-type="carry">+</button></div>
+      <ul class="transport-sub-list" id="carryList">`;
+    if (hasCarry) {
+      trip.carry.forEach((item, idx) => {
+        html += `<li>${renderInlineMd(escapeHtml(item))}</li>`;
+      });
+    } else {
+      html += '<li style="color:var(--text-tertiary);font-style:italic">暂无内容，点击 + 添加</li>';
+    }
+    html += '</ul></div>';
+
+    // 行李寄存 sub-section
+    html += `<div class="transport-sub-section">
+      <div class="transport-sub-title">🧳 行李寄存 <button class="transport-sub-add" data-type="luggage">+</button></div>
+      <ul class="transport-sub-list" id="luggageList">`;
+    if (hasLuggage) {
+      trip.luggage.forEach((item, idx) => {
+        html += `<li>${renderInlineMd(escapeHtml(item))}</li>`;
+      });
+    } else {
+      html += '<li style="color:var(--text-tertiary);font-style:italic">暂无内容，点击 + 添加</li>';
+    }
+    html += '</ul></div>';
+
+    html += '</div></div>';
+    el.innerHTML = html;
+
+    // Toggle
+    const panel = document.getElementById('transportPanelBox');
+    if (panel) {
+      panel.querySelector('.transport-header').addEventListener('click', () => {
+        panel.classList.toggle('open');
+      });
+    }
+
+    // Add carry/luggage items
+    el.querySelectorAll('.transport-sub-add').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const type = btn.dataset.type;
+        const label = type === 'carry' ? '随身携带' : '行李寄存';
+        const body = `
+          <div class="form-group"><label class="form-label">内容</label><input class="form-input" id="subItemText" placeholder="如 ${type === 'carry' ? '护照、充电宝' : '东京站 コインロッカー'}"></div>
+          <button class="form-submit-btn" id="subItemSave">添加</button>
+        `;
+        openFormModal('新增' + label + '项', body);
+        setTimeout(() => {
+          document.getElementById('subItemSave').addEventListener('click', () => {
+            const text = document.getElementById('subItemText').value.trim();
+            if (!text) { showToast('✏️ 请填写内容'); return; }
+            const trip = getCurrentTrip();
+            if (!trip) return;
+            if (!trip[type]) trip[type] = [];
+            trip[type].push(text);
+            saveTrips(); closeFormModal(); renderTransportPanel(trip);
+            showToast('✅ 已添加');
+          });
+        }, 50);
+      });
+    });
+  }
+
+  /* ============================
+     Day Tabs & Checkpoints with Attachments
+     ============================ */
+  function renderDayTabs(trip) {
+    const tabsEl = document.getElementById('dayTabs');
+    const contentEl = document.getElementById('dayContent');
+    if (!trip.days || trip.days.length === 0) { tabsEl.innerHTML = ''; contentEl.innerHTML = ''; return; }
+
+    currentDayIndex = 0;
+    let tabsHtml = '';
+    trip.days.forEach((day, idx) => {
+      tabsHtml += `<button class="day-tab${idx === 0 ? ' active' : ''}" data-day="${idx}">Day ${day.index}</button>`;
+    });
+    tabsEl.innerHTML = tabsHtml;
+    renderDayPanel(trip);
+
+    tabsEl.querySelectorAll('.day-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabsEl.querySelectorAll('.day-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentDayIndex = parseInt(btn.dataset.day);
+        renderDayPanel(trip);
+      });
+    });
+  }
+
+  function renderDayPanel(trip) {
+    const contentEl = document.getElementById('dayContent');
+    const day = trip.days[currentDayIndex];
+    if (!day) { contentEl.innerHTML = ''; return; }
+
+    let html = `<div class="day-panel active"><div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">${escapeHtml(day.label)}</div>`;
+    html += '<div class="checkpoint-list">';
+    day.checkpoints.forEach((cp, idx) => {
+      const cpType = cp.type || 'itinerary';
+      if (cpType === 'checkin') {
+        // ---- Checkin card (打卡卡片) ----
+        const imgsHtml = (cp.images && cp.images.length > 0) ? '<div class="checkin-card-images">' + cp.images.map(src => `<img src="${src}" alt="" onclick="window._openLightbox('${src.replace(/'/g, "\\'")}')">`).join('') + '</div>' : '';
+        html += `<div class="checkin-card" data-idx="${idx}">
+          <div class="checkin-card-actions">
+            <button class="checkin-delete-btn" data-day="${currentDayIndex}" data-cp="${idx}" title="删除">🗑</button>
+          </div>
+          <div class="checkin-card-header">
+            <span class="checkin-card-badge">打卡</span>
+            <span class="checkin-card-title">${escapeHtml(cp.title || '')}</span>
+          </div>
+          <div class="checkin-card-meta">
+            ${cp.location ? `<span>📍 ${escapeHtml(cp.location)}</span>` : ''}
+            ${cp.time ? `<span>🕐 ${escapeHtml(cp.time)}</span>` : ''}
+          </div>
+          ${cp.content ? `<div class="checkin-card-content">${renderInlineMd(escapeHtml(cp.content))}</div>` : ''}
+          ${imgsHtml}
+          ${travelReplyHtml(cp.reply || '')}
+        </div>`;
+      } else {
+        // ---- Itinerary card (行程卡片) ----
+        const stateClass = cp.skipped ? ' skipped' : (cp.done ? ' checked' : '');
+        const nameClass = cp.skipped ? ' skipped' : (cp.done ? ' done' : '');
+        // 兼容旧数据：如果只有 cp.reply 没有 addReply/doneReply，迁移到新字段
+        const addReply = cp.addReply || (cp.reply && !cp.done ? cp.reply : '') || '';
+        const doneReply = cp.doneReply || (cp.reply && cp.done ? cp.reply : '') || '';
+        const imageReply = cp.imageReply || '';
+
+        // 行程条本体（行前提示嵌入卡片内部顶部）
+        html += `<div class="checkpoint-item" style="flex-wrap:wrap">`;
+        // 行前提示横幅（仅未完成时显示，内嵌卡片顶部）
+        if (!cp.done && !cp.skipped && addReply) {
+          html += itineraryPreHintHtml(addReply);
+        }
+        html += `<div class="checkpoint-check${stateClass}" data-day="${currentDayIndex}" data-cp="${idx}"></div>
+          <div class="checkpoint-info" style="flex:1;min-width:0">
+            <div class="checkpoint-time">${escapeHtml(cp.time)}</div>
+            <div class="checkpoint-name${nameClass}">${renderInlineMd(escapeHtml(cp.name || ''))}</div>
+            ${cp.detail ? `<div class="checkpoint-detail">${renderInlineMd(escapeHtml(cp.detail))}</div>` : ''}
+          </div>
+          <div class="checkpoint-actions">
+            <button class="checkpoint-skip-btn" data-day="${currentDayIndex}" data-cp="${idx}" title="${cp.skipped ? '取消跳过' : '跳过'}">⊘</button>
+            <button class="checkpoint-delete-btn" data-day="${currentDayIndex}" data-cp="${idx}" title="删除">🗑</button>
+            <button class="checkpoint-add-btn" data-day="${currentDayIndex}" data-cp="${idx}" title="添加攻略">+</button>
+          </div>`;
+        // Render attachments
+        if (cp.attachments && cp.attachments.length > 0) {
+          html += '<div class="checkpoint-attachments" style="width:100%;margin-left:34px">';
+          cp.attachments.forEach((att, ai) => {
+            const thumb = att.images && att.images.length > 0 ? `<img class="attachment-bar-thumb" src="${att.images[0]}" alt="">` : '';
+            const preview = att.content ? att.content.substring(0, 20) : '';
+            html += `<div class="attachment-bar" data-day="${currentDayIndex}" data-cp="${idx}" data-att="${ai}">
+            <span class="attachment-bar-icon">📌</span>
+            <span class="attachment-bar-title">${escapeHtml(att.title)}</span>
+            <span class="attachment-bar-preview">${escapeHtml(preview)}</span>
+            ${thumb}
+          </div>`;
+          });
+          html += '</div>';
+        }
+        html += '</div>';
+
+        // 完成后帖子回复（下方，仅勾选完成时显示）
+        if (cp.done && doneReply) {
+          html += itineraryPostReplyHtml(doneReply);
+        }
+        // 图片上传触发回复（下方，有图片回复时常显）
+        if (imageReply) {
+          html += itineraryPostReplyHtml(imageReply);
+        }
+      }
+    });
+    // Add buttons
+    html += `</div>
+      <button class="add-item-btn" id="addCheckpointBtn">+ 添加行程</button>
+      <button class="add-item-btn" id="addCheckinBtn">+ 添加打卡</button>
+    </div>`;
+    contentEl.innerHTML = html;
+
+    // Checkpoint toggle (tap circle: unchecked → done → unchecked; skipped state managed separately)
+    contentEl.querySelectorAll('.checkpoint-check').forEach(el => {
+      el.addEventListener('click', () => {
+        const di = parseInt(el.dataset.day);
+        const ci = parseInt(el.dataset.cp);
+        const t = getCurrentTrip();
+        if (t && t.days[di] && t.days[di].checkpoints[ci]) {
+          const cp = t.days[di].checkpoints[ci];
+          if (cp.skipped) {
+            // If skipped, clicking circle un-skips it
+            cp.skipped = false;
+          } else {
+            cp.done = !cp.done;
+            // 勾选完成时生成完成回复，取消勾选时清除完成回复
+            if (cp.done) {
+              cp.doneReply = generateTravelReply(cp.name || '', 'done');
+            } else {
+              cp.doneReply = '';
+            }
+          }
+          saveTrips();
+          renderDayPanel(t);
+        }
+      });
+    });
+
+    // Skip button
+    contentEl.querySelectorAll('.checkpoint-skip-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const di = parseInt(btn.dataset.day);
+        const ci = parseInt(btn.dataset.cp);
+        const t = getCurrentTrip();
+        if (t && t.days[di] && t.days[di].checkpoints[ci]) {
+          const cp = t.days[di].checkpoints[ci];
+          cp.skipped = !cp.skipped;
+          if (cp.skipped) cp.done = false;
+          saveTrips();
+          renderDayPanel(t);
+        }
+      });
+    });
+
+    // Delete button
+    contentEl.querySelectorAll('.checkpoint-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const di = parseInt(btn.dataset.day);
+        const ci = parseInt(btn.dataset.cp);
+        const t = getCurrentTrip();
+        if (t && t.days[di] && t.days[di].checkpoints[ci]) {
+          t.days[di].checkpoints.splice(ci, 1);
+          saveTrips();
+          renderDayPanel(t);
+          showToast('🗑️ 行程已删除');
+        }
+      });
+    });
+
+    // Add attachment button
+    contentEl.querySelectorAll('.checkpoint-add-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openAttachmentModal(parseInt(btn.dataset.day), parseInt(btn.dataset.cp));
+      });
+    });
+
+    // View attachment
+    contentEl.querySelectorAll('.attachment-bar').forEach(bar => {
+      bar.addEventListener('click', () => {
+        const di = parseInt(bar.dataset.day);
+        const ci = parseInt(bar.dataset.cp);
+        const ai = parseInt(bar.dataset.att);
+        viewAttachment(di, ci, ai);
+      });
+    });
+
+    // Add checkpoint button
+    const addCpBtn = document.getElementById('addCheckpointBtn');
+    if (addCpBtn) {
+      addCpBtn.addEventListener('click', () => {
+        openAddCheckpointModal();
+      });
+    }
+
+    // Add checkin button
+    const addCiBtn = document.getElementById('addCheckinBtn');
+    if (addCiBtn) {
+      addCiBtn.addEventListener('click', () => {
+        openAddCheckinModal();
+      });
+    }
+
+    // Checkin card delete
+    contentEl.querySelectorAll('.checkin-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const di = parseInt(btn.dataset.day);
+        const ci = parseInt(btn.dataset.cp);
+        const t = getCurrentTrip();
+        if (t && t.days[di] && t.days[di].checkpoints[ci]) {
+          if (!confirm('确定删除这条打卡记录？')) return;
+          t.days[di].checkpoints.splice(ci, 1);
+          saveTrips();
+          renderDayPanel(t);
+          showToast('🗑️ 打卡已删除');
+        }
+      });
+    });
+  }
+
+  /* ============================
+     Attachment Modal (攻略附件)
+     ============================ */
+  function openAttachmentModal(dayIdx, cpIdx) {
+    pendingAttachmentImages = [];
+    const body = `
+      <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="attTitle" placeholder="如：排队攻略"></div>
+      <div class="form-group"><label class="form-label">正文</label><textarea class="form-textarea" id="attContent" placeholder="写下你的攻略/笔记..."></textarea></div>
+      <div class="form-group">
+        <label class="form-label">图片（可选）</label>
+        <button class="hotel-upload-btn" id="attAddImg" style="margin-top:0">📷 添加图片</button>
+        <div class="form-image-previews" id="attImgPreviews"></div>
+      </div>
+      <button class="form-submit-btn" id="attSave">发布</button>
+    `;
+    openFormModal('添加攻略', body);
+    setTimeout(() => {
+      document.getElementById('attAddImg').addEventListener('click', () => {
+        attachmentImageInput.dataset.dayIdx = dayIdx;
+        attachmentImageInput.dataset.cpIdx = cpIdx;
+        attachmentImageInput.click();
+      });
+      document.getElementById('attSave').addEventListener('click', () => {
+        const title = document.getElementById('attTitle').value.trim();
+        const content = document.getElementById('attContent').value.trim();
+        if (!title && !content) { showToast('✏️ 请至少填写标题或正文'); return; }
+        const trip = getCurrentTrip();
+        if (!trip) return;
+        const cp = trip.days[dayIdx] && trip.days[dayIdx].checkpoints[cpIdx];
+        if (!cp) return;
+        if (!cp.attachments) cp.attachments = [];
+        cp.attachments.push({ id: genId(), title: title || '未命名', content, images: [...pendingAttachmentImages] });
+        // 方案4：检测到图片上传时触发 image_upload 回复（仅行程条类型）
+        if (pendingAttachmentImages.length > 0 && (cp.type || 'itinerary') === 'itinerary') {
+          cp.imageReply = generateTravelReply(cp.name || '', 'image_upload');
+        }
+        saveTrips();
+        closeFormModal();
+        renderDayPanel(trip);
+        showToast('📌 攻略已添加');
+      });
+    }, 50);
+  }
+
+  // Attachment image upload
+  attachmentImageInput.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      const dataUrl = await compressImage(file);
+      if (dataUrl) pendingAttachmentImages.push(dataUrl);
+    }
+    const previews = document.getElementById('attImgPreviews');
+    if (previews) {
+      previews.innerHTML = pendingAttachmentImages.map((src, i) => `
+        <div class="preview-item"><img src="${src}" alt=""></div>
+      `).join('');
+    }
+    attachmentImageInput.value = '';
+  });
+
+  function viewAttachment(dayIdx, cpIdx, attIdx) {
+    const trip = getCurrentTrip();
+    if (!trip) return;
+    const att = trip.days[dayIdx] && trip.days[dayIdx].checkpoints[cpIdx] && trip.days[dayIdx].checkpoints[cpIdx].attachments[attIdx];
+    if (!att) return;
+    let imgsHtml = '';
+    if (att.images && att.images.length > 0) {
+      imgsHtml = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">';
+      att.images.forEach(img => { imgsHtml += `<img src="${img}" style="max-width:100%;border-radius:8px;cursor:pointer" onclick="window._openLightbox('${img.replace(/'/g, "\\'")}')">` });
+      imgsHtml += '</div>';
+    }
+    const body = `
+      <div style="font-size:14px;color:var(--text-primary);line-height:1.7;white-space:pre-wrap">${escapeHtml(att.content || '（无正文）')}</div>
+      ${imgsHtml}
+      <button class="form-submit-btn" style="margin-top:16px;background:var(--danger)" id="attDeleteBtn">删除此攻略</button>
+    `;
+    openFormModal(att.title, body);
+    setTimeout(() => {
+      document.getElementById('attDeleteBtn').addEventListener('click', () => {
+        trip.days[dayIdx].checkpoints[cpIdx].attachments.splice(attIdx, 1);
+        saveTrips();
+        closeFormModal();
+        renderDayPanel(trip);
+        showToast('🗑️ 攻略已删除');
+      });
+    }, 50);
+  }
+
+  function openAddCheckpointModal() {
+    const body = `
+      <div class="form-group"><label class="form-label">时间（可选）</label><input class="form-input" id="cpTime" placeholder="如 14:00"></div>
+      <div class="form-group"><label class="form-label">地点/事项</label><input class="form-input" id="cpName" placeholder="如 大室山山顶"></div>
+      <button class="form-submit-btn" id="cpSave">添加</button>
+    `;
+    openFormModal('新增行程', body);
+    setTimeout(() => {
+      document.getElementById('cpSave').addEventListener('click', () => {
+        const name = document.getElementById('cpName').value.trim();
+        if (!name) { showToast('✏️ 请填写地点/事项'); return; }
+        const trip = getCurrentTrip();
+        if (!trip || !trip.days[currentDayIndex]) return;
+        const cpItem = {
+          type: 'itinerary',
+          time: document.getElementById('cpTime').value.trim(),
+          name, done: false, attachments: [],
+          addReply: generateTravelReply(name, 'add'),
+          doneReply: ''
+        };
+        trip.days[currentDayIndex].checkpoints.push(cpItem);
+        saveTrips();
+        closeFormModal();
+        renderDayPanel(trip);
+        showToast('📍 行程已添加');
+      });
+    }, 50);
+  }
+
+  /* ============================
+     Checkin Modal (添加打卡)
+     ============================ */
+  let pendingCheckinImages = [];
+
+  function openAddCheckinModal() {
+    pendingCheckinImages = [];
+    const trip = getCurrentTrip();
+    if (!trip || !trip.days[currentDayIndex]) return;
+    const day = trip.days[currentDayIndex];
+    // Build itinerary options for "插入位置" select
+    const itineraryItems = [];
+    day.checkpoints.forEach((cp, idx) => {
+      if ((cp.type || 'itinerary') === 'itinerary') {
+        itineraryItems.push({ idx, label: (cp.time ? cp.time + ' ' : '') + (cp.name || '未命名') });
+      }
+    });
+    let selectHtml = '<option value="-1">添加到末尾</option>';
+    itineraryItems.forEach(it => {
+      selectHtml += `<option value="${it.idx}">${escapeHtml(it.label)}</option>`;
+    });
+
+    const body = `
+      <div class="form-group"><label class="form-label">插入在哪个行程后面</label><select class="form-input" id="ciAfter" style="height:38px">${selectHtml}</select></div>
+      <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="ciTitle" placeholder="如：大室山打卡"></div>
+      <div style="display:flex;gap:10px">
+        <div class="form-group" style="flex:1"><label class="form-label">地点</label><input class="form-input" id="ciLocation" placeholder="如：大室山山顶"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">时间</label><input class="form-input" id="ciTime" placeholder="如 14:30"></div>
+      </div>
+      <div class="form-group"><label class="form-label">内容</label><textarea class="form-textarea" id="ciContent" placeholder="记录你的打卡感受..."></textarea></div>
+      <div class="form-group">
+        <label class="form-label">图片（可选）</label>
+        <button class="hotel-upload-btn" id="ciAddImg" style="margin-top:0">📷 添加图片</button>
+        <div class="form-image-previews" id="ciImgPreviews"></div>
+      </div>
+      <button class="form-submit-btn" id="ciSave">发布打卡</button>
+    `;
+    openFormModal('添加打卡', body);
+    setTimeout(() => {
+      document.getElementById('ciAddImg').addEventListener('click', () => {
+        checkinImageInput.click();
+      });
+      document.getElementById('ciSave').addEventListener('click', () => {
+        const title = document.getElementById('ciTitle').value.trim();
+        if (!title) { showToast('✏️ 请填写标题'); return; }
+        const trip = getCurrentTrip();
+        if (!trip || !trip.days[currentDayIndex]) return;
+        const afterIdx = parseInt(document.getElementById('ciAfter').value);
+        const checkinItem = {
+          type: 'checkin',
+          title,
+          location: document.getElementById('ciLocation').value.trim(),
+          time: document.getElementById('ciTime').value.trim(),
+          content: document.getElementById('ciContent').value.trim(),
+          images: [...pendingCheckinImages],
+          reply: generateTravelReply(
+            title + ' ' + document.getElementById('ciContent').value.trim() + ' ' + document.getElementById('ciLocation').value.trim(),
+            'checkin'
+          )
+        };
+        const day = trip.days[currentDayIndex];
+        if (afterIdx >= 0 && afterIdx < day.checkpoints.length) {
+          // Insert after the selected itinerary item
+          day.checkpoints.splice(afterIdx + 1, 0, checkinItem);
+        } else {
+          // Append to end
+          day.checkpoints.push(checkinItem);
+        }
+        saveTrips();
+        closeFormModal();
+        renderDayPanel(trip);
+        showToast('📸 打卡已发布');
+      });
+    }, 50);
+  }
+
+  checkinImageInput.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      const dataUrl = await compressImage(file);
+      if (dataUrl) pendingCheckinImages.push(dataUrl);
+    }
+    const previews = document.getElementById('ciImgPreviews');
+    if (previews) {
+      previews.innerHTML = pendingCheckinImages.map((src, i) => `
+        <div class="preview-item"><img src="${src}" alt=""></div>
+      `).join('');
+    }
+    checkinImageInput.value = '';
+  });
+
+  /* ============================
+     Sub Panels (Notes/Checklist/Lookup/Materials)
+     ============================ */
+  function renderSubPanels(trip) {
+    renderNotesPanel(trip);
+    renderChecklistPanel(trip);
+    renderLookupPanel(trip);
+    renderMaterialsPanel(trip);
+  }
+
+  function renderNotesPanel(trip) {
+    const el = document.getElementById('panelNotes');
+    let html = '';
+    if (trip.notes && trip.notes.length > 0) {
+      trip.notes.forEach((n, idx) => {
+        html += `<div class="note-item">
+          <button class="note-item-edit" data-idx="${idx}" title="编辑">✏️</button>
+          <button class="note-item-delete" data-idx="${idx}">&times;</button>
+          <div class="note-item-title">${renderInlineMd(escapeHtml(n.title || ''))}</div>
+          <div class="note-item-text">${renderInlineMd(escapeHtml(n.text || ''))}</div>
+        </div>`;
+      });
+    } else {
+      html += '<div style="text-align:center;color:var(--text-tertiary);padding:20px">暂无记事</div>';
+    }
+    html += '<button class="add-item-btn" id="addNoteBtn">+ 添加记事</button>';
+    el.innerHTML = html;
+
+    // Edit note
+    el.querySelectorAll('.note-item-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx);
+        const trip = getCurrentTrip();
+        if (!trip || !trip.notes[idx]) return;
+        const n = trip.notes[idx];
+        const body = `
+          <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="noteEditTitle" value="${escapeHtml(n.title || '')}"></div>
+          <div class="form-group"><label class="form-label">内容</label><textarea class="form-textarea" id="noteEditContent">${escapeHtml(n.text || '')}</textarea></div>
+          <button class="form-submit-btn" id="noteEditSave">保存</button>
+        `;
+        openFormModal('编辑记事', body);
+        setTimeout(() => {
+          document.getElementById('noteEditSave').addEventListener('click', () => {
+            const title = document.getElementById('noteEditTitle').value.trim();
+            const text = document.getElementById('noteEditContent').value.trim();
+            if (!title && !text) { showToast('✏️ 请填写内容'); return; }
+            trip.notes[idx].title = title || text.substring(0, 10);
+            trip.notes[idx].text = text;
+            saveTrips(); closeFormModal(); renderNotesPanel(trip);
+            showToast('📝 记事已更新');
+          });
+        }, 50);
+      });
+    });
+
+    // Delete note
+    el.querySelectorAll('.note-item-delete').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const trip = getCurrentTrip();
+        if (!trip) return;
+        trip.notes.splice(parseInt(btn.dataset.idx), 1);
+        saveTrips(); renderNotesPanel(trip);
+      });
+    });
+
+    // Add note
+    document.getElementById('addNoteBtn').addEventListener('click', () => {
+      const body = `
+        <div class="form-group"><label class="form-label">标题（简短）</label><input class="form-input" id="noteTitle" placeholder="如 餐厅推荐"></div>
+        <div class="form-group"><label class="form-label">内容</label><textarea class="form-textarea" id="noteContent" placeholder="详细内容..."></textarea></div>
+        <button class="form-submit-btn" id="noteSave">添加</button>
+      `;
+      openFormModal('新增记事', body);
+      setTimeout(() => {
+        document.getElementById('noteSave').addEventListener('click', () => {
+          const title = document.getElementById('noteTitle').value.trim();
+          const text = document.getElementById('noteContent').value.trim();
+          if (!title && !text) { showToast('✏️ 请填写内容'); return; }
+          const trip = getCurrentTrip();
+          if (!trip) return;
+          if (!trip.notes) trip.notes = [];
+          trip.notes.push({ id: genId(), title: title || text.substring(0, 10), text });
+          saveTrips(); closeFormModal(); renderNotesPanel(trip);
+          showToast('📝 记事已添加');
+        });
+      }, 50);
+    });
+  }
+
+  function renderChecklistPanel(trip) {
+    const el = document.getElementById('panelChecklist');
+    let html = '<div class="checklist-list">';
+    if (trip.checklist && trip.checklist.length > 0) {
+      trip.checklist.forEach((item, idx) => {
+        html += `<div class="checklist-item">
+            <div class="checklist-cb${item.done ? ' checked' : ''}" data-idx="${idx}"></div>
+            <span class="checklist-text${item.done ? ' done' : ''}">${renderInlineMd(escapeHtml(item.text))}</span>
+          </div>`;
+      });
+    } else {
+      html += '<div style="text-align:center;color:var(--text-tertiary);padding:20px">暂无清单项</div>';
+    }
+    html += '</div><button class="add-item-btn" id="addChecklistBtn">+ 添加清单项</button>';
+    el.innerHTML = html;
+
+    el.querySelectorAll('.checklist-cb').forEach(cb => {
+      cb.addEventListener('click', () => {
+        const idx = parseInt(cb.dataset.idx);
+        const trip = getCurrentTrip();
+        if (trip && trip.checklist[idx]) {
+          trip.checklist[idx].done = !trip.checklist[idx].done;
+          saveTrips(); renderChecklistPanel(trip);
+        }
+      });
+    });
+
+    document.getElementById('addChecklistBtn').addEventListener('click', () => {
+      const body = `
+        <div class="form-group"><label class="form-label">清单项</label><input class="form-input" id="checkItemText" placeholder="如 护照复印件"></div>
+        <button class="form-submit-btn" id="checkItemSave">添加</button>
+      `;
+      openFormModal('新增清单项', body);
+      setTimeout(() => {
+        document.getElementById('checkItemSave').addEventListener('click', () => {
+          const text = document.getElementById('checkItemText').value.trim();
+          if (!text) { showToast('✏️ 请填写内容'); return; }
+          const trip = getCurrentTrip();
+          if (!trip) return;
+          if (!trip.checklist) trip.checklist = [];
+          trip.checklist.push({ text, done: false });
+          saveTrips(); closeFormModal(); renderChecklistPanel(trip);
+          showToast('✅ 清单项已添加');
+        });
+      }, 50);
+    });
+  }
+
+  function renderLookupPanel(trip) {
+    const el = document.getElementById('panelLookup');
+    let html = '';
+    // Render from lookupRaw (paste-mode data)
+    if (trip.lookupRaw && trip.lookupRaw.trim()) {
+      const rawLines = trip.lookupRaw.trim().split('\n').filter(l => l.startsWith('|'));
+      if (rawLines.length >= 2) {
+        html = mdTableToHtmlWithDelete(rawLines, trip);
+      }
+    }
+    // Fallback to structured data
+    if (!html && trip.lookup && trip.lookup.length > 0) {
+      html = '<table class="lookup-table"><thead><tr><th>中文</th><th>日文</th><th>罗马音</th><th style="width:36px"></th></tr></thead><tbody>';
+      trip.lookup.forEach((l, i) => {
+        html += `<tr><td>${escapeHtml(l.cn)}</td><td>${escapeHtml(l.jp)}</td><td>${escapeHtml(l.romaji)}</td>
+          <td><button class="lookup-del-btn" data-idx="${i}" title="删除">×</button></td></tr>`;
+      });
+      html += '</tbody></table>';
+    }
+    if (!html) {
+      html = '<div style="text-align:center;color:var(--text-tertiary);padding:30px 20px;line-height:1.8">' +
+        '<div style="font-size:24px;margin-bottom:8px">🗺️</div>' +
+        '<div>粘贴 MD 表格或逐条添加速查项</div></div>';
+    }
+    html += `<div class="lookup-btn-row">
+      <button class="add-item-btn" id="addLookupBtn">+ 逐条添加</button>
+      <button class="add-item-btn" id="pasteLookupBtn" style="background:var(--bg-hover)">📋 粘贴表格</button>
+    </div>`;
+    el.innerHTML = html;
+
+    // Delete buttons for structured rows
+    el.querySelectorAll('.lookup-del-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        const t = getCurrentTrip();
+        if (!t) return;
+        // If from lookupRaw, rebuild
+        if (t.lookupRaw && t.lookupRaw.trim()) {
+          const rawLines = t.lookupRaw.trim().split('\n').filter(l => l.startsWith('|'));
+          // idx is data-row index (0-based, after header+separator)
+          let dataIdx = 0;
+          const kept = [];
+          let headerDone = false;
+          for (const line of rawLines) {
+            const cells = line.split('|').slice(1, -1).map(c => c.trim());
+            if (cells.every(c => /^[-:]+$/.test(c))) { kept.push(line); headerDone = true; continue; }
+            if (!headerDone) { kept.push(line); continue; }
+            if (dataIdx !== idx) kept.push(line);
+            dataIdx++;
+          }
+          t.lookupRaw = kept.join('\n') + '\n';
+          // Also remove from structured
+          if (t.lookup && t.lookup[idx]) t.lookup.splice(idx, 1);
+        } else {
+          t.lookup.splice(idx, 1);
+        }
+        saveTrips(); renderLookupPanel(t);
+        showToast('🗑 已删除');
+      });
+    });
+
+    // Single-item add
+    document.getElementById('addLookupBtn').addEventListener('click', () => {
+      const body = `
+        <div class="form-group"><label class="form-label">中文</label><input class="form-input" id="lookupCn" placeholder="大室山"></div>
+        <div class="form-group"><label class="form-label">日文</label><input class="form-input" id="lookupJp" placeholder="おおむろさん"></div>
+        <div class="form-group"><label class="form-label">罗马音</label><input class="form-input" id="lookupRomaji" placeholder="Oomuro-san"></div>
+        <button class="form-submit-btn" id="lookupSave">添加</button>
+      `;
+      openFormModal('新增速查项', body);
+      setTimeout(() => {
+        document.getElementById('lookupSave').addEventListener('click', () => {
+          const cn = document.getElementById('lookupCn').value.trim();
+          if (!cn) { showToast('✏️ 请至少填写中文名'); return; }
+          const trip = getCurrentTrip();
+          if (!trip) return;
+          if (!trip.lookup) trip.lookup = [];
+          const jp = document.getElementById('lookupJp').value.trim();
+          const romaji = document.getElementById('lookupRomaji').value.trim();
+          trip.lookup.push({ cn, jp, romaji });
+          // Also update lookupRaw
+          if (!trip.lookupRaw) trip.lookupRaw = '| 中文 | 日文 | 罗马音 |\n| --- | --- | --- |\n';
+          trip.lookupRaw += `| ${cn} | ${jp} | ${romaji} |\n`;
+          saveTrips(); closeFormModal(); renderLookupPanel(trip);
+          showToast('🗺️ 速查项已添加');
+        });
+      }, 50);
+    });
+
+    // Paste MD table
+    document.getElementById('pasteLookupBtn').addEventListener('click', () => {
+      const body = `
+        <div class="form-group">
+          <label class="form-label">粘贴 Markdown 表格</label>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px">
+            支持标准 MD 表格格式，也支持 blockquote（> 开头）的表格。粘贴后自动解析渲染。
+          </div>
+          <textarea class="form-input" id="lookupPasteMd" rows="10" placeholder="| 中文 | 日文 | 罗马音 |
+|:---|:---|:---|
+| 成田机场 | 成田国際空港 | *Narita* |
+| 东京站 | 東京駅 | *Tokyo Eki* |" style="font-family:monospace;font-size:12px;line-height:1.6;resize:vertical"></textarea>
+        </div>
+        <div id="lookupPastePreview" style="margin-bottom:12px"></div>
+        <button class="form-submit-btn" id="lookupPasteConfirm">确认导入</button>
+      `;
+      openFormModal('📋 粘贴速查表格', body);
+      setTimeout(() => {
+        const ta = document.getElementById('lookupPasteMd');
+        const preview = document.getElementById('lookupPastePreview');
+        // Live preview
+        ta.addEventListener('input', () => {
+          const lines = parsePastedMdTable(ta.value);
+          if (lines.length >= 2) {
+            preview.innerHTML = '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">预览：</div>' + mdTableToHtml(lines);
+          } else {
+            preview.innerHTML = '<div style="font-size:11px;color:var(--text-tertiary)">暂未识别到有效表格行</div>';
+          }
+        });
+
+        document.getElementById('lookupPasteConfirm').addEventListener('click', () => {
+          const lines = parsePastedMdTable(ta.value);
+          if (lines.length < 2) { showToast('❌ 未识别到有效表格'); return; }
+          const trip = getCurrentTrip();
+          if (!trip) return;
+          // Replace existing lookup data
+          trip.lookupRaw = lines.join('\n') + '\n';
+          trip.lookup = [];
+          let headerDone = false;
+          for (const line of lines) {
+            const cells = line.split('|').slice(1, -1).map(c => c.trim());
+            if (cells.every(c => /^[-:]+$/.test(c))) { headerDone = true; continue; }
+            if (!headerDone) continue; // skip header row
+            if (cells.length >= 2) {
+              trip.lookup.push({ cn: cells[0] || '', jp: cells[1] || '', romaji: cells[2] || '' });
+            }
+          }
+          saveTrips(); closeFormModal(); renderLookupPanel(trip);
+          showToast('🗺️ 速查表已导入（' + trip.lookup.length + '条）');
+        });
+      }, 50);
+    });
+  }
+
+  // Parse pasted MD table text — strip blockquote prefix, filter valid table lines
+  function parsePastedMdTable(text) {
+    return text.split('\n')
+      .map(l => l.replace(/^>\s*/, '').trim())       // strip blockquote >
+      .filter(l => l.startsWith('|') && l.endsWith('|'))
+      .filter(l => !l.includes('@image:'));
+  }
+
+  // mdTableToHtml variant with delete buttons per data row
+  function mdTableToHtmlWithDelete(rawLines, trip) {
+    const tableLines = rawLines.filter(l => l.startsWith('|') && l.endsWith('|'));
+    if (tableLines.length < 2) return '';
+    let html = '<table class="lookup-table">';
+    let headerDone = false;
+    let dataIdx = 0;
+    for (let i = 0; i < tableLines.length; i++) {
+      const cells = tableLines[i].split('|').slice(1, -1).map(c => c.trim());
+      if (cells.every(c => /^[-:]+$/.test(c))) { headerDone = true; continue; }
+      if (!headerDone) {
+        html += '<thead><tr>' + cells.map(c => `<th>${renderInlineMd(escapeHtml(c))}</th>`).join('') +
+          '<th style="width:36px"></th></tr></thead><tbody>';
+      } else {
+        html += '<tr>' + cells.map(c => `<td>${renderInlineMd(escapeHtml(c))}</td>`).join('') +
+          `<td><button class="lookup-del-btn" data-idx="${dataIdx}" title="删除">×</button></td></tr>`;
+        dataIdx++;
+      }
+    }
+    html += '</tbody></table>';
+    return html;
+  }
+
+  /* ============================
+     Materials Panel (关键材料上传)
+     ============================ */
+  function renderMaterialsPanel(trip) {
+    const el = document.getElementById('panelMaterials');
+    let html = '';
+    if (trip.materials && trip.materials.length > 0) {
+      html = '<div class="materials-grid">';
+      trip.materials.forEach((m, idx) => {
+        html += `<div class="material-item">
+          <img src="${m.image}" alt="${escapeHtml(m.label)}" onclick="window._openLightbox('${m.image.replace(/'/g, "\\'")}')">
+          <div class="material-item-label">${escapeHtml(m.label)}</div>
+          <button class="material-item-delete" data-idx="${idx}">&times;</button>
+        </div>`;
+      });
+      html += '</div>';
+    } else {
+      html = '<div style="text-align:center;color:var(--text-tertiary);padding:20px">上传签证、预订单等关键材料，支持离线查看</div>';
+    }
+    html += '<button class="add-item-btn" id="addMaterialBtn">+ 上传材料</button>';
+    el.innerHTML = html;
+
+    // Delete material
+    el.querySelectorAll('.material-item-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const trip = getCurrentTrip();
+        if (!trip) return;
+        trip.materials.splice(parseInt(btn.dataset.idx), 1);
+        saveTrips(); renderMaterialsPanel(trip);
+        showToast('🗑️ 材料已删除');
+      });
+    });
+
+    // Add material
+    document.getElementById('addMaterialBtn').addEventListener('click', () => {
+      const body = `
+        <div class="form-group"><label class="form-label">标签（如"签证页"、"预订单"）</label><input class="form-input" id="matLabel" placeholder="签证页"></div>
+        <div class="form-group">
+          <label class="form-label">选择图片</label>
+          <button class="hotel-upload-btn" id="matSelectImg" style="margin-top:0">📷 选择图片</button>
+          <div id="matPreview" style="margin-top:8px"></div>
+        </div>
+        <button class="form-submit-btn" id="matSave">上传</button>
+      `;
+      openFormModal('上传关键材料', body);
+      let matImage = '';
+      setTimeout(() => {
+        document.getElementById('matSelectImg').addEventListener('click', () => materialUploadInput.click());
+        materialUploadInput.onchange = async (ev) => {
+          const file = ev.target.files[0];
+          if (!file) return;
+          matImage = await compressImage(file);
+          if (matImage) {
+            document.getElementById('matPreview').innerHTML = `<img src="${matImage}" style="max-width:100%;max-height:200px;border-radius:8px">`;
+          }
+          materialUploadInput.value = '';
+        };
+        document.getElementById('matSave').addEventListener('click', () => {
+          const label = document.getElementById('matLabel').value.trim() || '未命名';
+          if (!matImage) { showToast('📷 请先选择图片'); return; }
+          const trip = getCurrentTrip();
+          if (!trip) return;
+          if (!trip.materials) trip.materials = [];
+          trip.materials.push({ id: genId(), label, image: matImage });
+          saveTrips(); closeFormModal(); renderMaterialsPanel(trip);
+          showToast('📎 材料已上传');
+        });
+      }, 50);
+    });
+  }
+
+  // Sub tab switching
+  document.getElementById('subTabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('.sub-tab');
+    if (!btn) return;
+    document.querySelectorAll('#subTabs .sub-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#subContent .sub-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const panel = btn.dataset.panel;
+    document.getElementById('panel' + panel.charAt(0).toUpperCase() + panel.slice(1)).classList.add('active');
+  });
+
+  /* ============================
+     Reply Settings Panel (回复规则设置)
+     ============================ */
+  const RS_FRAGMENT_KEY = 'my_fragment_reply_rules';
+  const RS_TRAVEL_KEY  = 'my_travel_reply_rules';
+
+  // Category display names
+  const FRAGMENT_CATEGORY_LABELS = {
+    affection: '💕 亲密', food: '🍜 美食', sleep: '😴 睡眠',
+    emotion: '💭 情绪', effort: '💪 工作', morning: '🌅 早安',
+    sick: '🤒 身体', night: '🌙 晚安',
+    _default: '📝 通用兜底', _latenight: '🌃 深夜兜底', _busyday: '📊 忙碌日'
+  };
+  const TRAVEL_CATEGORY_LABELS = {
+    airport: '✈️ 机场', depart: '🚀 出发', hotel: '🏨 住宿',
+    food: '🍣 美食', scenery: '🏔️ 风景', transport: '🚃 交通', shopping: '🛍️ 购物',
+    _default: '📝 通用兜底', _done: '✅ 完成打卡', _image: '📷 图片上传'
+  };
+
+  // Deep clone defaults for reset
+  const FRAGMENT_RULES_DEFAULT = JSON.parse(JSON.stringify(REPLY_RULES));
+  const FRAGMENT_DEFAULT_REPLIES_DEFAULT = [...DEFAULT_REPLIES];
+  const FRAGMENT_LATENIGHT_DEFAULT = [...LATE_NIGHT_REPLIES];
+  const FRAGMENT_BUSYDAY_DEFAULT = [...BUSY_DAY_REPLIES];
+  const TRAVEL_RULES_DEFAULT = JSON.parse(JSON.stringify(TRAVEL_REPLY_RULES));
+  const TRAVEL_DEFAULT_REPLIES_DEFAULT = [...TRAVEL_DEFAULT_REPLIES];
+  const TRAVEL_DONE_REPLIES_DEFAULT = [...TRAVEL_DONE_REPLIES];
+  const TRAVEL_IMAGE_UPLOAD_REPLIES_DEFAULT = [...TRAVEL_IMAGE_UPLOAD_REPLIES];
+
+  // Load saved rules from localStorage
+  function loadReplyRulesFromStorage() {
+    try {
+      const fragData = localStorage.getItem(RS_FRAGMENT_KEY);
+      if (fragData) {
+        const parsed = JSON.parse(fragData);
+        if (parsed.rules) REPLY_RULES = parsed.rules;
+        if (parsed.defaultReplies) DEFAULT_REPLIES.splice(0, DEFAULT_REPLIES.length, ...parsed.defaultReplies);
+        if (parsed.lateNightReplies) LATE_NIGHT_REPLIES.splice(0, LATE_NIGHT_REPLIES.length, ...parsed.lateNightReplies);
+        if (parsed.busyDayReplies) BUSY_DAY_REPLIES.splice(0, BUSY_DAY_REPLIES.length, ...parsed.busyDayReplies);
+      }
+    } catch(e) { console.warn('Load fragment reply rules failed:', e); }
+    try {
+      const travelData = localStorage.getItem(RS_TRAVEL_KEY);
+      if (travelData) {
+        const parsed = JSON.parse(travelData);
+        if (parsed.rules) TRAVEL_REPLY_RULES = parsed.rules;
+        if (parsed.defaultReplies) TRAVEL_DEFAULT_REPLIES.splice(0, TRAVEL_DEFAULT_REPLIES.length, ...parsed.defaultReplies);
+        if (parsed.doneReplies) TRAVEL_DONE_REPLIES.splice(0, TRAVEL_DONE_REPLIES.length, ...parsed.doneReplies);
+        if (parsed.imageUploadReplies) TRAVEL_IMAGE_UPLOAD_REPLIES.splice(0, TRAVEL_IMAGE_UPLOAD_REPLIES.length, ...parsed.imageUploadReplies);
+      }
+    } catch(e) { console.warn('Load travel reply rules failed:', e); }
+  }
+
+  function saveFragmentRules() {
+    localStorage.setItem(RS_FRAGMENT_KEY, JSON.stringify({
+      rules: REPLY_RULES,
+      defaultReplies: [...DEFAULT_REPLIES],
+      lateNightReplies: [...LATE_NIGHT_REPLIES],
+      busyDayReplies: [...BUSY_DAY_REPLIES]
+    }));
+  }
+
+  function saveTravelRules() {
+    localStorage.setItem(RS_TRAVEL_KEY, JSON.stringify({
+      rules: TRAVEL_REPLY_RULES,
+      defaultReplies: [...TRAVEL_DEFAULT_REPLIES],
+      doneReplies: [...TRAVEL_DONE_REPLIES],
+      imageUploadReplies: [...TRAVEL_IMAGE_UPLOAD_REPLIES]
+    }));
+  }
+
+  // Render helpers
+  function escHtml(str) {
+    const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+  }
+
+  function renderChips(items, type, onDelete) {
+    return items.map((item, i) =>
+      `<span class="rs-chip ${type}">
+        <span class="rs-chip-text" title="${escHtml(item)}">${escHtml(item)}</span>
+        <button class="chip-del" data-idx="${i}">✕</button>
+      </span>`
+    ).join('');
+  }
+
+  function buildCategoryCard(key, label, data, mode) {
+    const kws = data.keywords || [];
+    const rps = data.replies || [];
+    return `
+    <div class="rs-category" data-cat="${key}" data-mode="${mode}">
+      <div class="rs-category-header">
+        <div class="rs-category-name">
+          ${label}
+          <span class="badge">${kws.length} 词 · ${rps.length} 条</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="rs-del-category" data-cat="${key}" title="删除分类">删除</button>
+          <div class="rs-category-toggle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+      </div>
+      <div class="rs-category-body">
+        <div class="rs-section-label">关键词</div>
+        <div class="rs-chips" data-field="keywords">${renderChips(kws, 'kw')}</div>
+        <div class="rs-add-row">
+          <input class="rs-add-input" data-field="keywords" placeholder="输入新关键词…">
+          <button class="rs-add-btn" data-field="keywords">添加</button>
+        </div>
+        <div class="rs-section-label" style="margin-top:14px">回复语料</div>
+        <div class="rs-chips" data-field="replies">${renderChips(rps, 'rp')}</div>
+        <div class="rs-add-row">
+          <input class="rs-add-input" data-field="replies" placeholder="输入新回复…">
+          <button class="rs-add-btn" data-field="replies">添加</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function buildFallbackCard(key, label, items, mode) {
+    return `
+    <div class="rs-category" data-cat="${key}" data-mode="${mode}">
+      <div class="rs-category-header">
+        <div class="rs-category-name">${label} <span class="badge">${items.length} 条</span></div>
+        <div class="rs-category-toggle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+      </div>
+      <div class="rs-category-body">
+        <div class="rs-chips" data-field="replies">${renderChips(items, 'rp')}</div>
+        <div class="rs-add-row">
+          <input class="rs-add-input" data-field="replies" placeholder="输入新回复…">
+          <button class="rs-add-btn" data-field="replies">添加</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function renderFragmentSettings() {
+    const container = document.getElementById('rsFragmentContent');
+    let html = '';
+    for (const [key, data] of Object.entries(REPLY_RULES)) {
+      const label = FRAGMENT_CATEGORY_LABELS[key] || ('🏷️ ' + key);
+      html += buildCategoryCard(key, label, data, 'fragment');
+    }
+    // Fallback pools
+    html += buildFallbackCard('_default', FRAGMENT_CATEGORY_LABELS._default, DEFAULT_REPLIES, 'fragment');
+    html += buildFallbackCard('_latenight', FRAGMENT_CATEGORY_LABELS._latenight, LATE_NIGHT_REPLIES, 'fragment');
+    html += buildFallbackCard('_busyday', FRAGMENT_CATEGORY_LABELS._busyday, BUSY_DAY_REPLIES, 'fragment');
+    // New category
+    html += `<div class="rs-new-category">
+      <button class="rs-new-category-btn" data-mode="fragment">＋ 新增场景分类</button>
+    </div>`;
+    // Reset
+    html += `<div class="rs-footer-actions">
+      <button class="rs-reset-btn" data-mode="fragment">恢复默认规则</button>
+    </div>`;
+    container.innerHTML = html;
+  }
+
+  function renderTravelSettings() {
+    const container = document.getElementById('rsTravelContent');
+    let html = '';
+    for (const [key, data] of Object.entries(TRAVEL_REPLY_RULES)) {
+      const label = TRAVEL_CATEGORY_LABELS[key] || ('🏷️ ' + key);
+      html += buildCategoryCard(key, label, data, 'travel');
+    }
+    html += buildFallbackCard('_default', TRAVEL_CATEGORY_LABELS._default, TRAVEL_DEFAULT_REPLIES, 'travel');
+    html += buildFallbackCard('_done', TRAVEL_CATEGORY_LABELS._done, TRAVEL_DONE_REPLIES, 'travel');
+    html += buildFallbackCard('_image', TRAVEL_CATEGORY_LABELS._image, TRAVEL_IMAGE_UPLOAD_REPLIES, 'travel');
+    html += `<div class="rs-new-category">
+      <button class="rs-new-category-btn" data-mode="travel">＋ 新增场景分类</button>
+    </div>`;
+    html += `<div class="rs-footer-actions">
+      <button class="rs-reset-btn" data-mode="travel">恢复默认规则</button>
+    </div>`;
+    container.innerHTML = html;
+  }
+
+  // Get the underlying array for a fallback key
+  function getFallbackArray(mode, cat) {
+    if (mode === 'fragment') {
+      if (cat === '_default') return DEFAULT_REPLIES;
+      if (cat === '_latenight') return LATE_NIGHT_REPLIES;
+      if (cat === '_busyday') return BUSY_DAY_REPLIES;
+    } else {
+      if (cat === '_default') return TRAVEL_DEFAULT_REPLIES;
+      if (cat === '_done') return TRAVEL_DONE_REPLIES;
+      if (cat === '_image') return TRAVEL_IMAGE_UPLOAD_REPLIES;
+    }
+    return null;
+  }
+
+  function getRulesObj(mode) {
+    return mode === 'fragment' ? REPLY_RULES : TRAVEL_REPLY_RULES;
+  }
+
+  function saveRules(mode) {
+    if (mode === 'fragment') saveFragmentRules();
+    else saveTravelRules();
+  }
+
+  function renderSettings(mode) {
+    if (mode === 'fragment') renderFragmentSettings();
+    else renderTravelSettings();
+  }
+
+  // Open / Close
+  function openReplySettings() {
+    renderFragmentSettings();
+    renderTravelSettings();
+    document.getElementById('replySettingsOverlay').classList.add('active');
+    document.getElementById('replySettingsPanel').classList.add('active');
+  }
+
+  function closeReplySettings() {
+    document.getElementById('replySettingsOverlay').classList.remove('active');
+    document.getElementById('replySettingsPanel').classList.remove('active');
+  }
+
+  // Event delegation for the settings panel
+  document.getElementById('replySettingsBtn').addEventListener('click', openReplySettings);
+  document.getElementById('rsCloseBtn').addEventListener('click', closeReplySettings);
+  document.getElementById('replySettingsOverlay').addEventListener('click', closeReplySettings);
+
+  // Tab switching
+  document.querySelector('.rs-tab-bar').addEventListener('click', (e) => {
+    const tab = e.target.closest('.rs-tab');
+    if (!tab) return;
+    document.querySelectorAll('.rs-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.rs-tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    const target = tab.dataset.rsTab;
+    document.getElementById(target === 'fragment' ? 'rsFragmentContent' : 'rsTravelContent').classList.add('active');
+  });
+
+  // Event delegation for category actions
+  document.getElementById('replySettingsPanel').addEventListener('click', (e) => {
+    // Toggle expand/collapse
+    const header = e.target.closest('.rs-category-header');
+    if (header && !e.target.closest('.rs-del-category')) {
+      header.closest('.rs-category').classList.toggle('expanded');
+      return;
+    }
+
+    // Delete chip
+    const chipDel = e.target.closest('.chip-del');
+    if (chipDel) {
+      const idx = parseInt(chipDel.dataset.idx);
+      const chipsContainer = chipDel.closest('.rs-chips');
+      const field = chipsContainer.dataset.field;
+      const catEl = chipDel.closest('.rs-category');
+      const cat = catEl.dataset.cat;
+      const mode = catEl.dataset.mode;
+
+      if (cat.startsWith('_')) {
+        // Fallback array
+        const arr = getFallbackArray(mode, cat);
+        if (arr && idx >= 0 && idx < arr.length) {
+          arr.splice(idx, 1);
+          saveRules(mode);
+          renderSettings(mode);
+        }
+      } else {
+        const rules = getRulesObj(mode);
+        if (rules[cat] && rules[cat][field]) {
+          rules[cat][field].splice(idx, 1);
+          saveRules(mode);
+          renderSettings(mode);
+        }
+      }
+      return;
+    }
+
+    // Add button
+    const addBtn = e.target.closest('.rs-add-btn');
+    if (addBtn) {
+      const row = addBtn.closest('.rs-add-row');
+      const input = row.querySelector('.rs-add-input');
+      const value = (input.value || '').trim();
+      if (!value) { input.focus(); return; }
+      const field = addBtn.dataset.field;
+      const catEl = addBtn.closest('.rs-category');
+      const cat = catEl.dataset.cat;
+      const mode = catEl.dataset.mode;
+
+      if (cat.startsWith('_')) {
+        const arr = getFallbackArray(mode, cat);
+        if (arr) { arr.push(value); saveRules(mode); renderSettings(mode); }
+      } else {
+        const rules = getRulesObj(mode);
+        if (rules[cat]) {
+          if (!rules[cat][field]) rules[cat][field] = [];
+          rules[cat][field].push(value);
+          saveRules(mode);
+          renderSettings(mode);
+        }
+      }
+      return;
+    }
+
+    // Delete category
+    const delCatBtn = e.target.closest('.rs-del-category');
+    if (delCatBtn) {
+      const cat = delCatBtn.dataset.cat;
+      const catEl = delCatBtn.closest('.rs-category');
+      const mode = catEl.dataset.mode;
+      if (cat.startsWith('_')) return; // Can't delete fallback pools
+      if (!confirm(`确定删除「${cat}」分类？删除后关键词和回复都会丢失。`)) return;
+      const rules = getRulesObj(mode);
+      delete rules[cat];
+      saveRules(mode);
+      renderSettings(mode);
+      return;
+    }
+
+    // New category
+    const newCatBtn = e.target.closest('.rs-new-category-btn');
+    if (newCatBtn) {
+      const mode = newCatBtn.dataset.mode;
+      const name = prompt('请输入新场景分类名（英文 key，如 onsen）：');
+      if (!name || !name.trim()) return;
+      const key = name.trim().toLowerCase().replace(/\s+/g, '_');
+      const rules = getRulesObj(mode);
+      if (rules[key]) { alert('该分类已存在'); return; }
+      rules[key] = { keywords: [], replies: [] };
+      saveRules(mode);
+      renderSettings(mode);
+      return;
+    }
+
+    // Reset
+    const resetBtn = e.target.closest('.rs-reset-btn');
+    if (resetBtn) {
+      const mode = resetBtn.dataset.mode;
+      if (!confirm('确定恢复默认规则？所有自定义修改将丢失。')) return;
+      if (mode === 'fragment') {
+        REPLY_RULES = JSON.parse(JSON.stringify(FRAGMENT_RULES_DEFAULT));
+        DEFAULT_REPLIES.splice(0, DEFAULT_REPLIES.length, ...FRAGMENT_DEFAULT_REPLIES_DEFAULT);
+        LATE_NIGHT_REPLIES.splice(0, LATE_NIGHT_REPLIES.length, ...FRAGMENT_LATENIGHT_DEFAULT);
+        BUSY_DAY_REPLIES.splice(0, BUSY_DAY_REPLIES.length, ...FRAGMENT_BUSYDAY_DEFAULT);
+        localStorage.removeItem(RS_FRAGMENT_KEY);
+      } else {
+        TRAVEL_REPLY_RULES = JSON.parse(JSON.stringify(TRAVEL_RULES_DEFAULT));
+        TRAVEL_DEFAULT_REPLIES.splice(0, TRAVEL_DEFAULT_REPLIES.length, ...TRAVEL_DEFAULT_REPLIES_DEFAULT);
+        TRAVEL_DONE_REPLIES.splice(0, TRAVEL_DONE_REPLIES.length, ...TRAVEL_DONE_REPLIES_DEFAULT);
+        TRAVEL_IMAGE_UPLOAD_REPLIES.splice(0, TRAVEL_IMAGE_UPLOAD_REPLIES.length, ...TRAVEL_IMAGE_UPLOAD_REPLIES_DEFAULT);
+        localStorage.removeItem(RS_TRAVEL_KEY);
+      }
+      renderSettings(mode);
+      return;
     }
   });
 
-  // 页面加载后延迟 3 秒检查一次
-  setTimeout(checkForUpdate, 3000);
+  // Allow Enter key to submit in add inputs
+  document.getElementById('replySettingsPanel').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.classList.contains('rs-add-input')) {
+      e.preventDefault();
+      const row = e.target.closest('.rs-add-row');
+      const btn = row.querySelector('.rs-add-btn');
+      if (btn) btn.click();
+    }
+  });
 
   /* ============================
      Init
      ============================ */
   function init() {
+    loadReplyRulesFromStorage();
     loadRecords();
-    migrateReplies(); // 一次性为旧记录固定回复
+    migrateReplies();
     renderTimeline();
     updateStreak();
     registerPWA();
+    loadTrips();
+    renderTravelList();
   }
 
-  // 检查 DOM 状态
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
