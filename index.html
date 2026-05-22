@@ -1538,6 +1538,121 @@ body::before {
 /* ============================================
    Materials Panel
    ============================================ */
+/* Guide Carousel (攻略/地图横向轮播) */
+.guide-carousel {
+  margin-top: 14px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 14px 16px 14px;
+  box-shadow: var(--shadow-card);
+}
+.guide-carousel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.guide-carousel-title {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+.guide-upload-btn {
+  border: none;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+.guide-upload-btn:active { transform: scale(0.95); }
+.guide-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+.guide-scroll::-webkit-scrollbar { display: none; }
+.guide-card {
+  flex-shrink: 0;
+  width: 72%;
+  max-width: 300px;
+  scroll-snap-align: start;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-card);
+  position: relative;
+}
+.guide-card img {
+  width: 100%;
+  display: block;
+  cursor: pointer;
+}
+.guide-card-caption {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 6px 10px;
+  line-height: 1.4;
+  min-height: 28px;
+  cursor: text;
+  background: var(--bg-card);
+  border-top: none;
+  font-family: var(--font-display);
+}
+.guide-card-caption:empty::before {
+  content: '点击添加说明...';
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+.guide-card-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.guide-card:hover .guide-card-delete,
+.guide-card:active .guide-card-delete { opacity: 1; }
+.guide-empty {
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  padding: 16px 0 8px;
+}
+.guide-empty-icon { font-size: 28px; margin-bottom: 4px; }
+.guide-dots {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 8px;
+}
+.guide-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+.guide-dot.active { opacity: 1; background: var(--primary); }
+
 .materials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .material-item { position: relative; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-hover); }
 .material-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
@@ -1710,6 +1825,7 @@ body::before {
           </svg>
         </button>
       </nav>
+      <div id="guideCarousel" class="guide-carousel"></div>
       <div id="flightCard" class="flight-card"></div>
       <div id="hotelTimeline" class="hotel-timeline"></div>
       <div id="dayTabs" class="day-tabs"></div>
@@ -1794,6 +1910,7 @@ body::before {
 <input type="file" id="hotelImageInput" accept="image/*" style="display:none">
 <input type="file" id="attachmentImageInput" accept="image/*" multiple style="display:none">
 <input type="file" id="checkinImageInput" accept="image/*" multiple style="display:none">
+<input type="file" id="guideUploadInput" accept="image/*" multiple style="display:none">
 
 <!-- Form Modal (通用编辑弹窗) -->
 <div class="form-modal-overlay" id="formModal">
@@ -1966,7 +2083,8 @@ body::before {
         '记得预留一点时间，别在机场忙成小陀螺。',
         '安检前把水喝掉，登机后好好休息。',
         '飞行途中记得看看窗外，说不定有惊喜。',
-        '到了机场就放松吧，旅途正式开始了。'
+        '到了机场就放松吧，旅途正式开始了。',
+        '证件、充电器、耳机。'
       ]
     },
     depart: {
@@ -1975,7 +2093,8 @@ body::before {
         '终于要出发了。',
         '感觉会是很特别的一段旅程。',
         '一切都准备好了吗？出发吧！',
-        '好好享受这趟旅行。'
+        '好好享受这趟旅行。',
+        '去玩吧，记得多拍些照片发给我。'
       ]
     },
     hotel: {
@@ -1984,7 +2103,9 @@ body::before {
         '看起来会是个很舒服的地方。',
         '到了就好好休息一下吧。',
         '希望房间能让你满意。',
-        '旅途劳累，先放下行李好好歇歇。'
+        '旅途劳累，先放下行李好好歇歇。',
+        '希望窗外的风景也不错。',
+        '终于有地方可以落脚了，哥哥也远程陪着你。'
       ]
     },
     food: {
@@ -1993,7 +2114,9 @@ body::before {
         '一定要帮我也尝一口。',
         '这家听起来很不错，好好享受。',
         '旅行中的美食是最好的记忆。',
-        '吃饱了才有力气继续逛。'
+        '吃饱了才有力气继续逛。',
+        '这家店看起来很不错，我妹妹真会选。',
+        '吃得好，心情就会好。'
       ]
     },
     scenery: {
@@ -2001,17 +2124,20 @@ body::before {
       replies: [
         '这种地方，一定要慢慢看。',
         '帮我也看一眼那边的风景。',
-        '有些风景，只有到了才知道有多好。',
-        '记得用眼睛多看一会儿，手机可以放一放。'
+        '今天的风好像有点舒服。',
+        '有些风景，只有到了才知道有多好。'
       ]
     },
     transport: {
       keywords: ['电车', '新干线', '巴士', '地铁', '出租车', '打车', '踊り子', '特急', '列车', '车站', '换乘'],
       replies: [
+        '出发去玩咯✌🏻',
         '坐车的时候可以看看窗外，放空一下。',
         '别坐过站了哦。',
         '交通顺利的话，今天应该能很充实。',
-        '路上注意安全，不用赶。'
+        '路上注意安全，不用赶。',
+        '车程有点长的话，可以靠着休息一下。',
+        '在路上的时间，也算旅行的一部分。'
       ]
     },
     shopping: {
@@ -2020,7 +2146,8 @@ body::before {
         '买到喜欢的东西了吗？',
         '逛街也是旅行的一部分，开心就好。',
         '别忘了给自己也买点什么。',
-        '手提袋别拿太多，手会累的。'
+        '手提袋别拿太多，手会累的。',
+        '今天这笔消费，好像挺值得。'
       ]
     }
   };
@@ -2029,28 +2156,29 @@ body::before {
     '旅途中的每一步都值得记住。',
     '好好享受这段时光。',
     '又完成了一个行程，继续出发吧。',
-    '我在默默关注你的旅途。',
+    '下次和哥哥一起去吧。',
     '今天也是充实的一天。',
-    '每一次出发都是一种勇气。',
+    '开始享受这段旅程了吗？',
     '这趟旅程，一定会留下很多美好。'
   ];
 
   let TRAVEL_DONE_REPLIES = [
     '完成了！接下来去哪？',
-    '又打卡一个地方，棒。',
-    '这一站结束了，下一站会更精彩。',
+    '又打卡一个地方，真棒👍🏻',
+    '这一站结束了，我和你一样期待下一站。',
     '做得很好，继续享受旅途吧。',
     '一步一步，都在变成回忆。',
-    '打了个漂亮的✓。'
+    '今天安排得很充实。'
   ];
 
   let TRAVEL_IMAGE_UPLOAD_REPLIES = [
     '照片看起来不错！',
-    '用镜头记录下来了，很好。',
-    '这张一定要留好。',
+    '不错，有机会哥哥陪你再去一次。',
+    '这张照片我也很喜欢。',
     '旅途中的画面，比文字更有力量。',
-    '拍到了，这一刻就不会溜走了。',
-    '好好保存这些瞬间。'
+    '拍好了，这一刻就不会溜走了。',
+    '我会好好保存这些瞬间。',
+    '哥哥看到了。'
   ];
 
   /**
@@ -2210,6 +2338,35 @@ body::before {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
           resolve(canvas.toDataURL('image/jpeg', IMG_QUALITY));
+        };
+        img.onerror = () => resolve(null);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 攻略/地图专用压缩：更高分辨率+质量，确保放大查看清晰
+  const GUIDE_MAX_WIDTH = 1600;
+  const GUIDE_QUALITY = 0.88;
+  function compressGuideImage(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > GUIDE_MAX_WIDTH) {
+            h = Math.round(h * GUIDE_MAX_WIDTH / w);
+            w = GUIDE_MAX_WIDTH;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', GUIDE_QUALITY));
         };
         img.onerror = () => resolve(null);
         img.src = e.target.result;
@@ -3404,6 +3561,7 @@ body::before {
     document.getElementById('tripDetailTitle').textContent = trip.title;
 
     renderFlightCard(trip);
+    renderGuideCarousel(trip);
     renderHotelDetail(trip);
     renderTransportPanel(trip);
     renderDayTabs(trip);
@@ -4124,6 +4282,121 @@ body::before {
     }
     checkinImageInput.value = '';
   });
+
+  /* ============================
+     Guide Carousel (攻略/地图轮播)
+     ============================ */
+  const guideUploadInput = document.getElementById('guideUploadInput');
+
+  function renderGuideCarousel(trip) {
+    const el = document.getElementById('guideCarousel');
+    if (!trip) { el.style.display = 'none'; return; }
+    el.style.display = '';
+
+    const guides = trip.guides || [];
+    let html = '<div class="guide-carousel-header">';
+    html += '<span class="guide-carousel-title">🗺️ 攻略 / 地图</span>';
+    html += '<button class="guide-upload-btn" id="guideUploadBtn">+ 上传图片</button>';
+    html += '</div>';
+
+    if (guides.length > 0) {
+      html += '<div class="guide-scroll" id="guideScroll">';
+      guides.forEach((g, idx) => {
+        html += `<div class="guide-card" data-idx="${idx}">
+          <img src="${g.image}" alt="${escapeHtml(g.caption || '')}" onclick="window._openLightbox('${g.image.replace(/'/g, "\\'")}')">
+          <div class="guide-card-caption" contenteditable="true" data-idx="${idx}" placeholder="点击添加说明...">${escapeHtml(g.caption || '')}</div>
+          <button class="guide-card-delete" data-idx="${idx}">&times;</button>
+        </div>`;
+      });
+      html += '</div>';
+      // Dots indicator
+      if (guides.length > 1) {
+        html += '<div class="guide-dots" id="guideDots">';
+        guides.forEach((_, i) => {
+          html += `<div class="guide-dot${i === 0 ? ' active' : ''}"></div>`;
+        });
+        html += '</div>';
+      }
+    } else {
+      html += '<div class="guide-empty"><div class="guide-empty-icon">🗺️</div>上传路线图、景区地图等攻略图片<br>支持横向滑动查看</div>';
+    }
+
+    el.innerHTML = html;
+
+    // Upload button
+    document.getElementById('guideUploadBtn').addEventListener('click', () => {
+      guideUploadInput.click();
+    });
+
+    // Handle file upload (multiple)
+    guideUploadInput.onchange = async (ev) => {
+      const files = Array.from(ev.target.files);
+      if (!files.length) return;
+      const trip = getCurrentTrip();
+      if (!trip) return;
+      if (!trip.guides) trip.guides = [];
+
+      for (const file of files) {
+        const img = await compressGuideImage(file);
+        if (img) {
+          trip.guides.push({ id: genId(), image: img, caption: '' });
+        }
+      }
+      guideUploadInput.value = '';
+      saveTrips();
+      renderGuideCarousel(trip);
+      showToast('🗺️ 攻略图片已上传');
+    };
+
+    // Delete buttons
+    el.querySelectorAll('.guide-card-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const trip = getCurrentTrip();
+        if (!trip || !trip.guides) return;
+        trip.guides.splice(parseInt(btn.dataset.idx), 1);
+        saveTrips();
+        renderGuideCarousel(trip);
+        showToast('🗑️ 图片已删除');
+      });
+    });
+
+    // Caption editing (contenteditable blur save)
+    el.querySelectorAll('.guide-card-caption').forEach(cap => {
+      cap.addEventListener('blur', () => {
+        const trip = getCurrentTrip();
+        if (!trip || !trip.guides) return;
+        const idx = parseInt(cap.dataset.idx);
+        if (trip.guides[idx]) {
+          trip.guides[idx].caption = cap.textContent.trim();
+          saveTrips();
+        }
+      });
+      // Prevent enter from creating new lines - save on enter
+      cap.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          cap.blur();
+        }
+      });
+    });
+
+    // Scroll dot indicator
+    const scroll = document.getElementById('guideScroll');
+    const dots = document.getElementById('guideDots');
+    if (scroll && dots) {
+      scroll.addEventListener('scroll', () => {
+        const cards = scroll.querySelectorAll('.guide-card');
+        if (!cards.length) return;
+        const scrollLeft = scroll.scrollLeft;
+        const cardWidth = cards[0].offsetWidth + 10; // gap
+        const activeIdx = Math.round(scrollLeft / cardWidth);
+        dots.querySelectorAll('.guide-dot').forEach((d, i) => {
+          d.classList.toggle('active', i === activeIdx);
+        });
+      });
+    }
+  }
 
   /* ============================
      Sub Panels (Notes/Checklist/Lookup/Materials)
