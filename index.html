@@ -1933,11 +1933,93 @@ body::before {
   /* ============================
      Constants & State
      ============================ */
-  const APP_VERSION = '2.1.0';
+  const APP_VERSION = '2.2.0';
   const STORAGE_KEY = 'my_fragments_data';
   const TRAVEL_STORAGE_KEY = 'my_travel_trips';
   const MAX_IMG_WIDTH = 800;
   const IMG_QUALITY = 0.7;
+
+  /* ============================
+     IndexedDB Image Store (解决 localStorage 5MB 上限导致数据丢失)
+     图片以 blob/base64 形式存入 IndexedDB（容量可达数百MB）
+     localStorage 只保存文本结构数据 + 图片引用 ID
+     ============================ */
+  const IDB_NAME = 'my_fragments_idb';
+  const IDB_VERSION = 1;
+  const IDB_STORE = 'images';
+  let _idb = null;
+
+  function openImageDB() {
+    return new Promise((resolve, reject) => {
+      if (_idb) { resolve(_idb); return; }
+      const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) {
+          db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = (e) => { _idb = e.target.result; resolve(_idb); };
+      req.onerror = (e) => { console.warn('IDB open failed', e); resolve(null); };
+    });
+  }
+
+  // 存入图片，返回引用 ID（格式 idb://xxxxx）
+  async function saveImageToIDB(dataUrl) {
+    const db = await openImageDB();
+    if (!db) return dataUrl; // fallback: 仍用 base64 内联
+    const id = 'img_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    return new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put({ id, data: dataUrl });
+      tx.oncomplete = () => resolve('idb://' + id);
+      tx.onerror = () => resolve(dataUrl); // fallback
+    });
+  }
+
+  // 根据引用 ID 读取图片 base64
+  async function loadImageFromIDB(ref) {
+    if (!ref || !ref.startsWith('idb://')) return ref; // 已经是 base64 直接返回
+    const db = await openImageDB();
+    if (!db) return '';
+    const id = ref.slice(6);
+    return new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).get(id);
+      req.onsuccess = () => resolve(req.result ? req.result.data : '');
+      req.onerror = () => resolve('');
+    });
+  }
+
+  // 批量加载：将对象树中所有 idb:// 引用替换为实际 base64（用于渲染）
+  async function resolveImageRefs(obj) {
+    if (!obj) return obj;
+    if (typeof obj === 'string') {
+      if (obj.startsWith('idb://')) return await loadImageFromIDB(obj);
+      return obj;
+    }
+    if (Array.isArray(obj)) {
+      return await Promise.all(obj.map(item => resolveImageRefs(item)));
+    }
+    if (typeof obj === 'object') {
+      const result = {};
+      for (const [k, v] of Object.entries(obj)) {
+        result[k] = await resolveImageRefs(v);
+      }
+      return result;
+    }
+    return obj;
+  }
+
+  // 删除 IDB 中的图片
+  async function deleteImageFromIDB(ref) {
+    if (!ref || !ref.startsWith('idb://')) return;
+    const db = await openImageDB();
+    if (!db) return;
+    const id = ref.slice(6);
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).delete(id);
+  }
 
   let records = [];
   let pendingImages = [];
@@ -2308,13 +2390,29 @@ body::before {
     }
   }
 
-  function saveRecords() {
+  // 异步加载碎片图片
+  async function loadRecordsWithImages() {
+    loadRecords();
+    for (const r of records) {
+      if (r.images) r.images = await Promise.all(r.images.map(img => resolveImageRefs(img)));
+    }
+  }
+
+  async function saveRecords() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      // 深拷贝：localStorage 存 IDB 引用，内存保持 base64 不变
+      const recordsToSave = JSON.parse(JSON.stringify(records));
+      for (const r of recordsToSave) {
+        if (r.images) {
+          r.images = await Promise.all(r.images.map(persistImage));
+        }
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(recordsToSave));
     } catch (e) {
       if (e.name === 'QuotaExceededError' || e.code === 22) {
         showToast('⚠️ 存储空间不足，请导出后清理旧记录');
       }
+      console.error('saveRecords error:', e);
     }
   }
 
@@ -3122,11 +3220,98 @@ body::before {
     } catch (e) { trips = []; }
   }
 
-  function saveTrips() {
+  // 异步加载：将 trips 中的 idb:// 图片引用还原为 base64 用于渲染
+  async function loadTripsWithImages() {
+    loadTrips();
+    for (const trip of trips) {
+      if (trip.hotels) {
+        for (const h of trip.hotels) {
+          if (h.images) h.images = await Promise.all(h.images.map(img => resolveImageRefs(img)));
+        }
+      }
+      if (trip.days) {
+        for (const day of trip.days) {
+          if (day.checkpoints) {
+            for (const cp of day.checkpoints) {
+              if (cp.images) cp.images = await Promise.all(cp.images.map(img => resolveImageRefs(img)));
+              if (cp.attachments) {
+                for (const att of cp.attachments) {
+                  if (att.images) att.images = await Promise.all(att.images.map(img => resolveImageRefs(img)));
+                }
+              }
+            }
+          }
+        }
+      }
+      if (trip.guides) {
+        for (const g of trip.guides) {
+          if (g.image) g.image = await resolveImageRefs(g.image);
+        }
+      }
+      if (trip.materials) {
+        for (const m of trip.materials) {
+          if (m.image) m.image = await resolveImageRefs(m.image);
+        }
+      }
+    }
+  }
+
+  // 将 trips 数据中的内联 base64 图片提取到 IDB，localStorage 只存引用
+  // 将单个图片 base64 存入 IDB 并返回引用；如果已经是引用则跳过
+  async function persistImage(img) {
+    if (!img) return img;
+    if (img.startsWith('idb://')) return img; // 已存
+    if (img.startsWith('data:')) return await saveImageToIDB(img);
+    return img;
+  }
+
+  // 保存 trips 到 localStorage（图片存入 IDB，localStorage 只存引用）
+  // 保持内存中 trips 的 base64 不变，渲染正常
+  async function saveTrips() {
     try {
-      localStorage.setItem(TRAVEL_STORAGE_KEY, JSON.stringify(trips));
+      // 深拷贝一份用于处理：localStorage 写引用，内存保持 base64
+      const tripsToSave = JSON.parse(JSON.stringify(trips));
+
+      for (const trip of tripsToSave) {
+        if (trip.hotels) {
+          for (const h of trip.hotels) {
+            if (h.images) h.images = await Promise.all(h.images.map(persistImage));
+          }
+        }
+        if (trip.days) {
+          for (const day of trip.days) {
+            if (day.checkpoints) {
+              for (const cp of day.checkpoints) {
+                if (cp.images) cp.images = await Promise.all(cp.images.map(persistImage));
+                if (cp.attachments) {
+                  for (const att of cp.attachments) {
+                    if (att.images) att.images = await Promise.all(att.images.map(persistImage));
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (trip.guides) {
+          for (const g of trip.guides) {
+            if (g.image) g.image = await persistImage(g.image);
+          }
+        }
+        if (trip.materials) {
+          for (const m of trip.materials) {
+            if (m.image) m.image = await persistImage(m.image);
+          }
+        }
+      }
+
+      localStorage.setItem(TRAVEL_STORAGE_KEY, JSON.stringify(tripsToSave));
     } catch (e) {
-      if (e.name === 'QuotaExceededError') showToast('⚠️ 存储空间不足');
+      if (e.name === 'QuotaExceededError' || e.code === 22) {
+        showToast('⚠️ 存储空间不足，请清理旧图片或导出数据');
+        console.error('saveTrips QuotaExceeded:', e);
+      } else {
+        console.error('saveTrips error:', e);
+      }
     }
   }
 
@@ -5155,8 +5340,9 @@ body::before {
   /* ============================
      Init
      ============================ */
-  function init() {
+  async function init() {
     loadReplyRulesFromStorage();
+    // 先同步加载文本数据渲染基本 UI
     loadRecords();
     migrateReplies();
     renderTimeline();
@@ -5164,10 +5350,17 @@ body::before {
     registerPWA();
     loadTrips();
     renderTravelList();
+
+    // 异步从 IDB 恢复图片数据，完成后重新渲染
+    await openImageDB();
+    await loadRecordsWithImages();
+    renderTimeline();
+    await loadTripsWithImages();
+    renderTravelList();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => init());
   } else {
     init();
   }
