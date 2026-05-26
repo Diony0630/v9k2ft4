@@ -2029,6 +2029,45 @@ body::before {
     tx.objectStore(IDB_STORE).delete(id);
   }
 
+  // ★ 图片 URL 缓存：idb://ref → base64/objectURL 的映射
+  // 用于渲染时快速获取可显示的 src
+  const _imgCache = new Map();
+
+  // 存入 IDB 并缓存，返回 idb:// 引用（trips/records 中存这个）
+  // 同时在 _imgCache 中保留 base64 供渲染使用
+  async function storeImage(dataUrl) {
+    const ref = await saveImageToIDB(dataUrl);
+    _imgCache.set(ref, dataUrl);
+    return ref;
+  }
+
+  // 获取可渲染的图片 src：如果是 idb:// 引用则从缓存或 IDB 加载
+  function getImageSrc(ref) {
+    if (!ref) return '';
+    if (!ref.startsWith('idb://')) return ref; // 普通 base64 直接用
+    if (_imgCache.has(ref)) return _imgCache.get(ref);
+    return ''; // 未加载完时返回空（异步加载后会更新）
+  }
+
+  // 解析 idb:// 引用并同时缓存，返回 base64（用于 loadTripsWithImages 中）
+  async function resolveAndCache(ref) {
+    if (!ref) return ref;
+    if (!ref.startsWith('idb://')) return ref;
+    if (_imgCache.has(ref)) return _imgCache.get(ref);
+    const data = await loadImageFromIDB(ref);
+    if (data) _imgCache.set(ref, data);
+    return data || '';
+  }
+
+  // 异步确保图片已加载到缓存
+  async function ensureImageCached(ref) {
+    if (!ref || !ref.startsWith('idb://')) return ref;
+    if (_imgCache.has(ref)) return _imgCache.get(ref);
+    const data = await loadImageFromIDB(ref);
+    if (data) _imgCache.set(ref, data);
+    return data || '';
+  }
+
   let records = [];
   let pendingImages = [];
   let deleteTargetId = null;
@@ -2402,7 +2441,7 @@ body::before {
   async function loadRecordsWithImages() {
     loadRecords();
     for (const r of records) {
-      if (r.images) r.images = await Promise.all(r.images.map(img => resolveImageRefs(img)));
+      if (r.images) r.images = await Promise.all(r.images.map(img => resolveAndCache(img)));
     }
   }
 
@@ -2415,7 +2454,9 @@ body::before {
           r.images = await Promise.all(r.images.map(persistImage));
         }
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(recordsToSave));
+      const newData = JSON.stringify(recordsToSave);
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(STORAGE_KEY, newData);
     } catch (e) {
       if (e.name === 'QuotaExceededError' || e.code === 22) {
         showToast('⚠️ 存储空间不足，请导出后清理旧记录');
@@ -2530,17 +2571,20 @@ body::before {
     }
   });
 
-  function publish() {
+  async function publish() {
     const text = textInput.value.trim();
     if (!text && pendingImages.length === 0) {
       showToast('✏️ 写点什么再发布吧');
       return;
     }
 
+    // 将 pending 图片存入 IDB
+    const imgRefs = await Promise.all(pendingImages.map(img => storeImage(img)));
+
     const record = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       text: text,
-      images: [...pendingImages],
+      images: imgRefs,
       createdAt: new Date().toISOString()
     };
 
@@ -2548,7 +2592,7 @@ body::before {
     record.reply = generateLightReply(record, records) || null;
 
     records.unshift(record);
-    saveRecords();
+    await saveRecords();
 
     // 清空输入
     textInput.value = '';
@@ -2597,9 +2641,10 @@ body::before {
                           record.images.length === 2 ? 'cols-2' : 'cols-3';
         imagesHtml = `
           <div class="record-images ${colsClass}">
-            ${record.images.map((src, i) => 
-              `<img src="${src}" alt="图片${i+1}" loading="lazy" onclick="window._openLightbox('${src.replace(/'/g, "\\'")}')" onerror="this.style.display='none'">`
-            ).join('')}
+            ${record.images.map((src, i) => {
+              const s = src && src.startsWith('idb://') ? getImageSrc(src) : src;
+              return `<img src="${s}" alt="图片${i+1}" loading="lazy" onclick="window._openLightbox(this.src)" onerror="this.style.display='none'">`;
+            }).join('')}
           </div>
         `;
       }
@@ -3370,17 +3415,17 @@ body::before {
     for (const trip of trips) {
       if (trip.hotels) {
         for (const h of trip.hotels) {
-          if (h.images) h.images = await Promise.all(h.images.map(img => resolveImageRefs(img)));
+          if (h.images) h.images = await Promise.all(h.images.map(img => resolveAndCache(img)));
         }
       }
       if (trip.days) {
         for (const day of trip.days) {
           if (day.checkpoints) {
             for (const cp of day.checkpoints) {
-              if (cp.images) cp.images = await Promise.all(cp.images.map(img => resolveImageRefs(img)));
+              if (cp.images) cp.images = await Promise.all(cp.images.map(img => resolveAndCache(img)));
               if (cp.attachments) {
                 for (const att of cp.attachments) {
-                  if (att.images) att.images = await Promise.all(att.images.map(img => resolveImageRefs(img)));
+                  if (att.images) att.images = await Promise.all(att.images.map(img => resolveAndCache(img)));
                 }
               }
             }
@@ -3389,12 +3434,12 @@ body::before {
       }
       if (trip.guides) {
         for (const g of trip.guides) {
-          if (g.image) g.image = await resolveImageRefs(g.image);
+          if (g.image) g.image = await resolveAndCache(g.image);
         }
       }
       if (trip.materials) {
         for (const m of trip.materials) {
-          if (m.image) m.image = await resolveImageRefs(m.image);
+          if (m.image) m.image = await resolveAndCache(m.image);
         }
       }
     }
@@ -3448,7 +3493,10 @@ body::before {
         }
       }
 
-      localStorage.setItem(TRAVEL_STORAGE_KEY, JSON.stringify(tripsToSave));
+      // 先删除旧 key 释放空间（解决 Safari 覆写时仍报 QuotaExceeded 的问题）
+      const newData = JSON.stringify(tripsToSave);
+      localStorage.removeItem(TRAVEL_STORAGE_KEY);
+      localStorage.setItem(TRAVEL_STORAGE_KEY, newData);
     } catch (e) {
       if (e.name === 'QuotaExceededError' || e.code === 22) {
         showToast('⚠️ 存储空间不足，请清理旧图片或导出数据');
@@ -3957,7 +4005,7 @@ body::before {
       if (h.note) html += `<div style="font-size:11px;color:var(--text-secondary);margin-top:4px">💡 ${escapeHtml(h.note)}</div>`;
       if (h.images && h.images.length > 0) {
         html += '<div class="hotel-detail-images">';
-        h.images.forEach(img => { html += `<img src="${img}" alt="预订单" onclick="window._openLightbox('${img.replace(/'/g, "\\'")}')">`; });
+        h.images.forEach(img => { const s = img && img.startsWith('idb://') ? getImageSrc(img) : img; html += `<img src="${s}" alt="预订单" onclick="window._openLightbox(this.src)">`; });
         html += '</div>';
       }
       html += `<button class="hotel-upload-btn" data-hotel="${idx}">📎 上传预订单</button>`;
@@ -3993,8 +4041,9 @@ body::before {
     const dataUrl = await compressImage(file);
     if (dataUrl) {
       if (!trip.hotels[idx].images) trip.hotels[idx].images = [];
-      trip.hotels[idx].images.push(dataUrl);
-      saveTrips();
+      const ref = await storeImage(dataUrl);
+      trip.hotels[idx].images.push(ref);
+      await saveTrips();
       renderHotelDetail(trip);
       showToast('📎 预订单已上传');
     }
@@ -4216,7 +4265,7 @@ body::before {
       const cpType = cp.type || 'itinerary';
       if (cpType === 'checkin') {
         // ---- Checkin card (打卡卡片) ----
-        const imgsHtml = (cp.images && cp.images.length > 0) ? '<div class="checkin-card-images">' + cp.images.map(src => `<img src="${src}" alt="" onclick="window._openLightbox('${src.replace(/'/g, "\\'")}')">`).join('') + '</div>' : '';
+        const imgsHtml = (cp.images && cp.images.length > 0) ? '<div class="checkin-card-images">' + cp.images.map(src => { const s = src && src.startsWith('idb://') ? getImageSrc(src) : src; return `<img src="${s}" alt="" onclick="window._openLightbox(this.src)">`; }).join('') + '</div>' : '';
         html += `<div class="checkin-card" data-idx="${idx}">
           <div class="checkin-card-actions">
             <button class="checkin-delete-btn" data-day="${currentDayIndex}" data-cp="${idx}" title="删除">🗑</button>
@@ -4263,7 +4312,7 @@ body::before {
         if (cp.attachments && cp.attachments.length > 0) {
           html += '<div class="checkpoint-attachments" style="width:100%;margin-left:34px">';
           cp.attachments.forEach((att, ai) => {
-            const thumb = att.images && att.images.length > 0 ? `<img class="attachment-bar-thumb" src="${att.images[0]}" alt="">` : '';
+            const thumb = att.images && att.images.length > 0 ? `<img class="attachment-bar-thumb" src="${att.images[0] && att.images[0].startsWith('idb://') ? getImageSrc(att.images[0]) : att.images[0]}" alt="">` : '';
             const preview = att.content ? att.content.substring(0, 20) : '';
             html += `<div class="attachment-bar" data-day="${currentDayIndex}" data-cp="${idx}" data-att="${ai}">
             <span class="attachment-bar-icon">📌</span>
@@ -4426,7 +4475,7 @@ body::before {
         attachmentImageInput.dataset.cpIdx = cpIdx;
         attachmentImageInput.click();
       });
-      document.getElementById('attSave').addEventListener('click', () => {
+      document.getElementById('attSave').addEventListener('click', async () => {
         const title = document.getElementById('attTitle').value.trim();
         const content = document.getElementById('attContent').value.trim();
         if (!title && !content) { showToast('✏️ 请至少填写标题或正文'); return; }
@@ -4435,12 +4484,14 @@ body::before {
         const cp = trip.days[dayIdx] && trip.days[dayIdx].checkpoints[cpIdx];
         if (!cp) return;
         if (!cp.attachments) cp.attachments = [];
-        cp.attachments.push({ id: genId(), title: title || '未命名', content, images: [...pendingAttachmentImages] });
+        // 将 pending 图片存入 IDB
+        const imgRefs = await Promise.all(pendingAttachmentImages.map(img => storeImage(img)));
+        cp.attachments.push({ id: genId(), title: title || '未命名', content, images: imgRefs });
         // 方案4：检测到图片上传时触发 image_upload 回复（仅行程条类型）
         if (pendingAttachmentImages.length > 0 && (cp.type || 'itinerary') === 'itinerary') {
           cp.imageReply = generateTravelReply(cp.name || '', 'image_upload');
         }
-        saveTrips();
+        await saveTrips();
         closeFormModal();
         renderDayPanel(trip);
         showToast('📌 攻略已添加');
@@ -4472,7 +4523,7 @@ body::before {
     let imgsHtml = '';
     if (att.images && att.images.length > 0) {
       imgsHtml = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">';
-      att.images.forEach(img => { imgsHtml += `<img src="${img}" style="max-width:100%;border-radius:8px;cursor:pointer" onclick="window._openLightbox('${img.replace(/'/g, "\\'")}')">` });
+      att.images.forEach(img => { const s = img && img.startsWith('idb://') ? getImageSrc(img) : img; imgsHtml += `<img src="${s}" style="max-width:100%;border-radius:8px;cursor:pointer" onclick="window._openLightbox(this.src)">` });
       imgsHtml += '</div>';
     }
     const body = `
@@ -4563,19 +4614,21 @@ body::before {
       document.getElementById('ciAddImg').addEventListener('click', () => {
         checkinImageInput.click();
       });
-      document.getElementById('ciSave').addEventListener('click', () => {
+      document.getElementById('ciSave').addEventListener('click', async () => {
         const title = document.getElementById('ciTitle').value.trim();
         if (!title) { showToast('✏️ 请填写标题'); return; }
         const trip = getCurrentTrip();
         if (!trip || !trip.days[currentDayIndex]) return;
         const afterIdx = parseInt(document.getElementById('ciAfter').value);
+        // 将 pending 图片存入 IDB
+        const imgRefs = await Promise.all(pendingCheckinImages.map(img => storeImage(img)));
         const checkinItem = {
           type: 'checkin',
           title,
           location: document.getElementById('ciLocation').value.trim(),
           time: document.getElementById('ciTime').value.trim(),
           content: document.getElementById('ciContent').value.trim(),
-          images: [...pendingCheckinImages],
+          images: imgRefs,
           reply: generateTravelReply(
             title + ' ' + document.getElementById('ciContent').value.trim() + ' ' + document.getElementById('ciLocation').value.trim(),
             'checkin'
@@ -4589,7 +4642,7 @@ body::before {
           // Append to end
           day.checkpoints.push(checkinItem);
         }
-        saveTrips();
+        await saveTrips();
         closeFormModal();
         renderDayPanel(trip);
         showToast('📸 打卡已发布');
@@ -4631,8 +4684,9 @@ body::before {
     if (guides.length > 0) {
       html += '<div class="guide-scroll" id="guideScroll">';
       guides.forEach((g, idx) => {
+        const src = g.image && g.image.startsWith('idb://') ? getImageSrc(g.image) : (g.image || '');
         html += `<div class="guide-card" data-idx="${idx}">
-          <img src="${g.image}" alt="${escapeHtml(g.caption || '')}" onclick="window._openLightbox('${g.image.replace(/'/g, "\\'")}')">
+          <img src="${src}" alt="${escapeHtml(g.caption || '')}" onclick="window._openLightbox(this.src)">
           <div class="guide-card-caption" contenteditable="true" data-idx="${idx}" placeholder="点击添加说明...">${escapeHtml(g.caption || '')}</div>
           <button class="guide-card-delete" data-idx="${idx}">&times;</button>
         </div>`;
@@ -4668,11 +4722,13 @@ body::before {
       for (const file of files) {
         const img = await compressGuideImage(file);
         if (img) {
-          trip.guides.push({ id: genId(), image: img, caption: '' });
+          // 立即存入 IDB + 缓存，trips 中只存引用
+          const ref = await storeImage(img);
+          trip.guides.push({ id: genId(), image: ref, caption: '' });
         }
       }
       guideUploadInput.value = '';
-      saveTrips();
+      await saveTrips();
       renderGuideCarousel(trip);
       showToast('🗺️ 攻略图片已上传');
     };
@@ -5047,8 +5103,9 @@ body::before {
     if (trip.materials && trip.materials.length > 0) {
       html = '<div class="materials-grid">';
       trip.materials.forEach((m, idx) => {
+        const msrc = m.image && m.image.startsWith('idb://') ? getImageSrc(m.image) : (m.image || '');
         html += `<div class="material-item">
-          <img src="${m.image}" alt="${escapeHtml(m.label)}" onclick="window._openLightbox('${m.image.replace(/'/g, "\\'")}')">
+          <img src="${msrc}" alt="${escapeHtml(m.label)}" onclick="window._openLightbox(this.src)">
           <div class="material-item-label">${escapeHtml(m.label)}</div>
           <button class="material-item-delete" data-idx="${idx}">&times;</button>
         </div>`;
@@ -5085,6 +5142,7 @@ body::before {
       `;
       openFormModal('上传关键材料', body);
       let matImage = '';
+      let matImageRef = '';
       setTimeout(() => {
         document.getElementById('matSelectImg').addEventListener('click', () => materialUploadInput.click());
         materialUploadInput.onchange = async (ev) => {
@@ -5092,18 +5150,19 @@ body::before {
           if (!file) return;
           matImage = await compressImage(file);
           if (matImage) {
+            matImageRef = await storeImage(matImage);
             document.getElementById('matPreview').innerHTML = `<img src="${matImage}" style="max-width:100%;max-height:200px;border-radius:8px">`;
           }
           materialUploadInput.value = '';
         };
-        document.getElementById('matSave').addEventListener('click', () => {
+        document.getElementById('matSave').addEventListener('click', async () => {
           const label = document.getElementById('matLabel').value.trim() || '未命名';
-          if (!matImage) { showToast('📷 请先选择图片'); return; }
+          if (!matImageRef) { showToast('📷 请先选择图片'); return; }
           const trip = getCurrentTrip();
           if (!trip) return;
           if (!trip.materials) trip.materials = [];
-          trip.materials.push({ id: genId(), label, image: matImage });
-          saveTrips(); closeFormModal(); renderMaterialsPanel(trip);
+          trip.materials.push({ id: genId(), label, image: matImageRef });
+          await saveTrips(); closeFormModal(); renderMaterialsPanel(trip);
           showToast('📎 材料已上传');
         });
       }, 50);
@@ -5495,12 +5554,106 @@ body::before {
     loadTrips();
     renderTravelList();
 
-    // 异步从 IDB 恢复图片数据，完成后重新渲染
+    // 异步打开 IDB 并执行旧数据迁移
     await openImageDB();
+
+    // ★ 关键：迁移旧数据中的内联 base64 到 IDB，释放 localStorage 空间
+    await migrateOldImagesToIDB();
+
+    // 从 IDB 恢复图片到内存用于渲染
     await loadRecordsWithImages();
     renderTimeline();
     await loadTripsWithImages();
     renderTravelList();
+  }
+
+  // 一次性迁移：把 localStorage 中已有的 base64 图片转存到 IDB
+  async function migrateOldImagesToIDB() {
+    let migrated = false;
+
+    // 迁移碎片图片
+    for (const r of records) {
+      if (r.images) {
+        for (let i = 0; i < r.images.length; i++) {
+          if (r.images[i] && r.images[i].startsWith('data:')) {
+            r.images[i] = await saveImageToIDB(r.images[i]);
+            migrated = true;
+          }
+        }
+      }
+    }
+    if (migrated) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      } catch (e) { console.warn('migrate records save failed', e); }
+    }
+
+    // 迁移旅行图片
+    migrated = false;
+    for (const trip of trips) {
+      if (trip.hotels) {
+        for (const h of trip.hotels) {
+          if (h.images) {
+            for (let i = 0; i < h.images.length; i++) {
+              if (h.images[i] && h.images[i].startsWith('data:')) {
+                h.images[i] = await saveImageToIDB(h.images[i]);
+                migrated = true;
+              }
+            }
+          }
+        }
+      }
+      if (trip.days) {
+        for (const day of trip.days) {
+          if (day.checkpoints) {
+            for (const cp of day.checkpoints) {
+              if (cp.images) {
+                for (let i = 0; i < cp.images.length; i++) {
+                  if (cp.images[i] && cp.images[i].startsWith('data:')) {
+                    cp.images[i] = await saveImageToIDB(cp.images[i]);
+                    migrated = true;
+                  }
+                }
+              }
+              if (cp.attachments) {
+                for (const att of cp.attachments) {
+                  if (att.images) {
+                    for (let i = 0; i < att.images.length; i++) {
+                      if (att.images[i] && att.images[i].startsWith('data:')) {
+                        att.images[i] = await saveImageToIDB(att.images[i]);
+                        migrated = true;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (trip.guides) {
+        for (const g of trip.guides) {
+          if (g.image && g.image.startsWith('data:')) {
+            g.image = await saveImageToIDB(g.image);
+            migrated = true;
+          }
+        }
+      }
+      if (trip.materials) {
+        for (const m of trip.materials) {
+          if (m.image && m.image.startsWith('data:')) {
+            m.image = await saveImageToIDB(m.image);
+            migrated = true;
+          }
+        }
+      }
+    }
+    if (migrated) {
+      try {
+        localStorage.setItem(TRAVEL_STORAGE_KEY, JSON.stringify(trips));
+        console.log('[Migration] Old base64 images migrated to IndexedDB');
+      } catch (e) { console.warn('migrate trips save failed', e); }
+    }
   }
 
   if (document.readyState === 'loading') {
